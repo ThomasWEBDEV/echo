@@ -1,15 +1,15 @@
 [remap]
 
-importer="scene"
+importer="animation_library"
 importer_version=1
-type="PackedScene"
+type="AnimationLibrary"
 uid="uid://ox7pe3r67vl"
-path="res://.godot/imported/TreadingWater.fbx-013a5da588de9800a5069c9db445215b.scn"
+path="res://.godot/imported/TreadingWater.fbx-013a5da588de9800a5069c9db445215b.res"
 
 [deps]
 
 source_file="res://assets/characters/TreadingWater.fbx"
-dest_files=["res://.godot/imported/TreadingWater.fbx-013a5da588de9800a5069c9db445215b.scn"]
+dest_files=["res://.godot/imported/TreadingWater.fbx-013a5da588de9800a5069c9db445215b.res"]
 
 [params]
 
