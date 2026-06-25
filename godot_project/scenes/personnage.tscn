@@ -1,3 +1,16 @@
 [gd_scene format=3 uid="uid://c3xuge2vou8ip"]
 
+[ext_resource type="PackedScene" uid="uid://cend80v7gbcju" path="res://scenes/ybot.tscn" id="1_4pkna"]
+[ext_resource type="Script" uid="uid://dl2ob568wv228" path="res://scripts/Personnage.cs" id="1_kmy4e"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kmy4e"]
+radius = 0.4
+
 [node name="Personnage" type="CharacterBody3D" unique_id=575533026]
+script = ExtResource("1_kmy4e")
+
+[node name="ybot" parent="." unique_id=1480278627 instance=ExtResource("1_4pkna")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1534788267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_kmy4e")
