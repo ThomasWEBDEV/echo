@@ -14,3 +14,9 @@ script = ExtResource("1_kmy4e")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1534788267]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_kmy4e")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=316806177]
+transform = Transform3D(1, 0, 0, 0, 0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0, 1.5, 4)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2011316818]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, 0)
