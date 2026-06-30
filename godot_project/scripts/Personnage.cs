@@ -5,10 +5,12 @@ public partial class Personnage : CharacterBody3D
 	[Export] public float VitesseMarche = 3.0f;
 	[Export] public float VitesseCourse = 6.0f;
 	[Export] public float Gravite = 9.8f;
+	[Export] public float SensibiliteSouris = 0.005f;
 
 	private AnimationTree _animTree;
 	private AnimationNodeStateMachinePlayback _sm;
 	private string _etatCourant = "";
+	private SpringArm3D _springArm;
 
 	public override void _Ready()
 	{
@@ -16,6 +18,27 @@ public partial class Personnage : CharacterBody3D
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
 		_ChangerEtat("Idle");
+
+		_springArm = GetNode<SpringArm3D>("SpringArm3D");
+		Input.MouseMode = Input.MouseModeEnum.Captured;
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventMouseMotion mouseMotion)
+		{
+			RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+			_springArm.RotateX(-mouseMotion.Relative.Y * SensibiliteSouris);
+
+			Vector3 rot = _springArm.Rotation;
+			rot.X = Mathf.Clamp(rot.X, Mathf.DegToRad(-60), Mathf.DegToRad(10));
+			_springArm.Rotation = rot;
+		}
+
+		if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.Escape)
+		{
+			Input.MouseMode = Input.MouseModeEnum.Visible;
+		}
 	}
 
 	private void _ChangerEtat(string nouvelEtat)
