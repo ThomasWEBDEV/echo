@@ -5,6 +5,7 @@ public partial class Personnage : CharacterBody3D
         [Export] public float VitesseMarche = 3.0f;
         [Export] public float VitesseCourse = 6.0f;
         [Export] public float Gravite = 9.8f;
+        [Export] public float ForceSaut = 5.0f;
         [Export] public float SensibiliteSouris = 0.005f;
 
         private AnimationTree _animTree;
@@ -52,14 +53,22 @@ public partial class Personnage : CharacterBody3D
         {
                 Vector3 velocity = Velocity;
 
+                // Gravité
                 if (!IsOnFloor())
                         velocity.Y -= Gravite * (float)delta;
+
+                // Saut sur Espace uniquement si au sol
+                if (IsOnFloor() && Input.IsKeyPressed(Key.Space))
+                {
+                        velocity.Y = ForceSaut;
+                        _ChangerEtat("Jump");
+                }
 
                 Vector2 input = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
                 Vector3 direction = new Vector3(input.X, 0, input.Y).Normalized();
 
-                // Espace = marcher, par défaut on court
-                bool marcher = Input.IsActionPressed("ui_accept");
+                // Shift = marcher, par défaut on court
+                bool marcher = Input.IsKeyPressed(Key.Shift);
 
                 if (direction.Length() > 0.1f)
                 {
@@ -67,10 +76,14 @@ public partial class Personnage : CharacterBody3D
                         velocity.X = direction.X * vitesse;
                         velocity.Z = direction.Z * vitesse;
 
-                        if (marcher)
-                                _ChangerEtat("Walking");
-                        else
-                                _ChangerEtat("Running");
+                        // Animation uniquement si au sol
+                        if (IsOnFloor())
+                        {
+                                if (marcher)
+                                        _ChangerEtat("Walking");
+                                else
+                                        _ChangerEtat("Running");
+                        }
 
                         LookAt(GlobalPosition + new Vector3(direction.X, 0, direction.Z), Vector3.Up);
                 }
@@ -78,7 +91,9 @@ public partial class Personnage : CharacterBody3D
                 {
                         velocity.X = 0;
                         velocity.Z = 0;
-                        _ChangerEtat("Idle");
+
+                        if (IsOnFloor())
+                                _ChangerEtat("Idle");
                 }
 
                 Velocity = velocity;
