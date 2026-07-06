@@ -19,6 +19,13 @@ config/icon="res://icon.svg"
 
 project/assembly_name="echo"
 
+[input]
+
+sauter={
+"deadzone": 0.2,
+"events": []
+}
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
