@@ -5,10 +5,13 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kmy4e"]
 radius = 0.4
+height = 1.8
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kmy4e"]
+size = Vector3(20, 0.1, 20)
 
 [node name="Personnage" type="CharacterBody3D" unique_id=575533026]
+floor_snap_length = 0.5
 script = ExtResource("1_kmy4e")
 
 [node name="ybot" parent="." unique_id=1480278627 instance=ExtResource("1_4pkna")]
@@ -21,10 +24,8 @@ shape = SubResource("CapsuleShape3D_kmy4e")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, 0)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1335126401]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1501234031]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 20)
 shape = SubResource("BoxShape3D_kmy4e")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=1352477918]
