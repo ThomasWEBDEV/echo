@@ -57,13 +57,7 @@ public partial class Personnage : CharacterBody3D
 						LookAt(GlobalPosition + new Vector3(direction.X, 0, direction.Z), Vector3.Up);
 				}
 				else
-				{
-						velocity.X = 0;
-						velocity.Z = 0;
-
-						if (IsOnFloor())
-								_ChangerEtat("Idle");
-				}
+			 
 
 				Velocity = velocity;
 				MoveAndSlide();
