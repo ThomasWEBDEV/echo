@@ -13,6 +13,7 @@ size = Vector3(20, 0.1, 20)
 [node name="Personnage" type="CharacterBody3D" unique_id=575533026]
 floor_snap_length = 0.5
 script = ExtResource("1_kmy4e")
+ForceSaut = 8.0
 
 [node name="ybot" parent="." unique_id=1480278627 instance=ExtResource("1_4pkna")]
 

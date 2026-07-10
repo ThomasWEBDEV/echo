@@ -32,15 +32,17 @@ public partial class Personnage : CharacterBody3D
 				if (!IsOnFloor())
 						velocity.Y -= Gravite * (float)delta;
 
-				// Saut
+				// Saut — vientDeSauter empêche Idle/Walk d'écraser Jump dans la même frame
+				bool vientDeSauter = false;
 				if (Input.IsActionJustPressed("sauter") && IsOnFloor())
 				{
 						velocity.Y = ForceSaut;
+						vientDeSauter = true;
 						_ChangerEtat("Jump");
 				}
+
 				Vector2 input = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 				Vector3 direction = new Vector3(input.X, 0, input.Y).Normalized();
-
 				bool courir = Input.IsActionPressed("ui_accept");
 
 				if (direction.Length() > 0.1f)
@@ -49,15 +51,24 @@ public partial class Personnage : CharacterBody3D
 						velocity.X = direction.X * vitesse;
 						velocity.Z = direction.Z * vitesse;
 
-						if (courir)
-								_ChangerEtat("Running");
-						else
-								_ChangerEtat("Walking");
+						if (IsOnFloor() && !vientDeSauter)
+						{
+								if (courir)
+										_ChangerEtat("Running");
+								else
+										_ChangerEtat("Walking");
+						}
 
 						LookAt(GlobalPosition + new Vector3(direction.X, 0, direction.Z), Vector3.Up);
 				}
 				else
-			 
+				{
+						velocity.X = 0;
+						velocity.Z = 0;
+
+						if (IsOnFloor() && !vientDeSauter)
+								_ChangerEtat("Idle");
+				}
 
 				Velocity = velocity;
 				MoveAndSlide();
