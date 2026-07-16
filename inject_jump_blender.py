@@ -5,7 +5,7 @@ Blender 5.2 — Scripting > Open > inject_jump_blender.py > Run Script
 Étapes automatisées :
   1. Vide la scène
   2. Importe raw_assets/character/ybot.glb (17 animations, sans Jump)
-  3. Importe Downloads/Jumping.fbx
+  3. Importe Downloads/Jump.fbx
   4. Prend la nouvelle action, la renomme "Jump", la pousse en NLA
   5. Supprime les objets FBX temporaires
   6. Exporte le GLB final (18 animations)
@@ -17,7 +17,7 @@ import shutil
 
 GLB_SOURCE = r"C:\Users\thoma\Desktop\echo\raw_assets\character\ybot.glb"
 GLB_GODOT  = r"C:\Users\thoma\Desktop\echo\godot_project\assets\characters\ybot.glb"
-FBX_JUMP   = r"C:\Users\thoma\Downloads\Jumping.fbx"
+FBX_JUMP   = r"C:\Users\thoma\Downloads\Jump.fbx"
 
 # ─── 1. Vider la scène ───────────────────────────────────────────────────────
 bpy.ops.object.select_all(action='SELECT')
