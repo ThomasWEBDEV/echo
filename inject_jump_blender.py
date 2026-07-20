@@ -43,11 +43,10 @@ print("[ECHO] Scène vidée.")
 # ─── 2. Importer le GLB principal ────────────────────────────────────────────
 bpy.ops.import_scene.gltf(filepath=GLB_SOURCE)
 glb_arm = next((o for o in bpy.data.objects if o.type == 'ARMATURE'), None)
-assert glb_arm, "[ERREUR] Aucune armature trouvée après import GLB."
+assert glb_arm, "[ERREUR] Armature GLB non trouvée."
 print(f"[ECHO] Armature GLB : '{glb_arm.name}'")
 
 glb_action_names = {a.name for a in bpy.data.actions}
-print(f"[ECHO] {len(glb_action_names)} actions existantes dans le GLB.")
 
 # Supprimer un Jump existant pour repartir propre
 existing_jump = bpy.data.actions.get("Jump")
@@ -58,7 +57,12 @@ if existing_jump:
 
 # ─── 3. Importer le FBX Jump In Place ────────────────────────────────────────
 bpy.ops.import_scene.fbx(filepath=FBX_JUMP, automatic_bone_orientation=False)
-print(f"[ECHO] FBX importé : {FBX_JUMP}")
+fbx_arm = next(
+    (o for o in bpy.data.objects if o.type == 'ARMATURE' and o.name != glb_arm.name),
+    None
+)
+assert fbx_arm, "[ERREUR] Armature FBX non trouvée."
+print(f"[ECHO] Armature FBX : '{fbx_arm.name}'")
 
 fbx_arm = next((o for o in bpy.data.objects
                 if o.type == 'ARMATURE' and o != glb_arm), None)
@@ -66,8 +70,8 @@ assert fbx_arm, "[ERREUR] Aucune armature FBX trouvée."
 print(f"[ECHO] Armature FBX : '{fbx_arm.name}'")
 
 fbx_action = next((a for a in bpy.data.actions if a.name not in glb_action_names), None)
-assert fbx_action, "[ERREUR] Aucune nouvelle action trouvée après import FBX."
-print(f"[ECHO] Action FBX : '{fbx_action.name}'")
+assert fbx_action, "[ERREUR] Aucune nouvelle action FBX trouvée."
+print(f"[ECHO] Action FBX brute : '{fbx_action.name}'")
 
 # ─── 4. Assigner l'action Jump au FBX armature ───────────────────────────────
 # (avec support du système de slots Blender 5.2)
