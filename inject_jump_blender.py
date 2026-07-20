@@ -1,15 +1,27 @@
 """
-Script Blender (interface graphique) — Injection animation Jump In Place
+Script Blender — Injection animation Jump avec retargeting worldspace
 Blender 5.2 — Scripting > Open > inject_jump_blender.py > Run Script
 
-Étapes automatisées :
+Différence avec l'ancienne version :
+  L'ancienne version transférait directement l'action FBX vers l'armature GLB.
+  Problème : les bone rolls diffèrent entre GLB (-49°) et FBX (0°), ce qui
+  provoquait un décalage de 90° (le saut jouait "de côté").
+
+  Cette version utilise des contraintes COPY_TRANSFORMS + bake worldspace :
+  Blender évalue la pose visuelle correcte à chaque frame et la convertit
+  dans l'espace de repos de l'armature GLB. Résultat : animation correcte.
+
+Étapes :
   1. Vide la scène
   2. Importe raw_assets/character/ybot.glb (17 animations, sans Jump)
   3. Importe Downloads/Jump.fbx
-  4. Prend la nouvelle action, la renomme "Jump", la pousse en NLA
-  5. Supprime les objets FBX temporaires
-  6. Exporte le GLB final (18 animations)
-  7. Copie dans godot_project
+  4. Assigne l'action Jump au FBX armature
+  5. Ajoute des contraintes COPY_TRANSFORMS sur chaque bone du GLB armature
+  6. Bake en worldspace → nouvelle action "Jump" correcte sur le GLB armature
+  7. Pousse "Jump" en NLA track sur le GLB armature
+  8. Supprime les objets FBX temporaires
+  9. Exporte le GLB final (18 animations)
+  10. Copie dans godot_project
 """
 
 import bpy
@@ -30,77 +42,113 @@ print("[ECHO] Scène vidée.")
 
 # ─── 2. Importer le GLB principal ────────────────────────────────────────────
 bpy.ops.import_scene.gltf(filepath=GLB_SOURCE)
-print(f"[ECHO] GLB importé : {GLB_SOURCE}")
-
 glb_arm = next((o for o in bpy.data.objects if o.type == 'ARMATURE'), None)
 assert glb_arm, "[ERREUR] Aucune armature trouvée après import GLB."
 print(f"[ECHO] Armature GLB : '{glb_arm.name}'")
 
-# Snapshot des actions existantes (17 animations originales)
 glb_action_names = {a.name for a in bpy.data.actions}
 print(f"[ECHO] {len(glb_action_names)} actions existantes dans le GLB.")
 
-# Vérifier qu'il n'y a pas déjà un "Jump"
-existing_jump = next((a for a in bpy.data.actions if a.name == "Jump"), None)
+# Supprimer un Jump existant pour repartir propre
+existing_jump = bpy.data.actions.get("Jump")
 if existing_jump:
-    print("[WARN] Une action 'Jump' existe déjà — elle sera remplacée.")
     bpy.data.actions.remove(existing_jump, do_unlink=True)
     glb_action_names.discard("Jump")
+    print("[WARN] Action 'Jump' existante supprimée — sera recréée.")
 
 # ─── 3. Importer le FBX Jump In Place ────────────────────────────────────────
 bpy.ops.import_scene.fbx(filepath=FBX_JUMP, automatic_bone_orientation=False)
 print(f"[ECHO] FBX importé : {FBX_JUMP}")
 
-# ─── 4. Identifier la nouvelle action créée par le FBX ───────────────────────
+fbx_arm = next((o for o in bpy.data.objects
+                if o.type == 'ARMATURE' and o != glb_arm), None)
+assert fbx_arm, "[ERREUR] Aucune armature FBX trouvée."
+print(f"[ECHO] Armature FBX : '{fbx_arm.name}'")
+
 fbx_action = next((a for a in bpy.data.actions if a.name not in glb_action_names), None)
 assert fbx_action, "[ERREUR] Aucune nouvelle action trouvée après import FBX."
 print(f"[ECHO] Action FBX : '{fbx_action.name}'")
 
-fbx_action.name = "Jump"
-print("[ECHO] Action renommée en 'Jump'.")
+# ─── 4. Assigner l'action Jump au FBX armature ───────────────────────────────
+# (avec support du système de slots Blender 5.2)
+if not fbx_arm.animation_data:
+    fbx_arm.animation_data_create()
+fbx_arm.animation_data.action = fbx_action
+if hasattr(fbx_arm.animation_data, 'action_slot') and fbx_action.slots:
+    fbx_arm.animation_data.action_slot = fbx_action.slots[0]
+    print(f"[ECHO] Slot FBX assigné : '{fbx_action.slots[0].identifier}'")
 
-# ─── 5. Vérifier l'absence de root motion dans l'animation ───────────────────
-# Blender 5.x : fcurves peut être dans layers[0].strips[0] ou directement sur l'action
-def get_fcurves(action):
-    # Nouveau système Layered Actions (Blender 4.4+)
-    if hasattr(action, 'layers') and action.layers:
-        for layer in action.layers:
-            if hasattr(layer, 'strips'):
-                for strip in layer.strips:
-                    if hasattr(strip, 'fcurves'):
-                        return list(strip.fcurves)
-    # Ancien système (Blender < 4.4)
-    if hasattr(action, 'fcurves'):
-        return list(action.fcurves)
-    return []
+frame_start = int(fbx_action.frame_range[0])
+frame_end   = int(fbx_action.frame_range[1])
+print(f"[ECHO] Frames Jump : {frame_start} → {frame_end}")
 
-fcurves = get_fcurves(fbx_action)
-print(f"[ECHO] {len(fcurves)} fcurves trouvées dans l'action Jump.")
-root_drift = None
-for fc in fcurves:
-    if "Hips" in fc.data_path and "location" in fc.data_path and fc.array_index == 0:
-        if fc.keyframe_points:
-            start_val = fc.keyframe_points[0].co[1]
-            end_val   = fc.keyframe_points[-1].co[1]
-            root_drift = abs(end_val - start_val)
-            print(f"[ECHO] Drift X Hips : {root_drift:.4f} (start={start_val:.4f}, end={end_val:.4f})")
-        break
-if root_drift is not None and root_drift > 0.01:
-    print(f"[WARN] Root motion détecté (drift={root_drift:.4f}) — vérifier que 'Jump In Place' a bien été téléchargé !")
-elif root_drift is not None:
-    print(f"[ECHO] OK — pas de root motion significatif.")
-else:
-    print("[ECHO] Hips non trouvé dans les fcurves — vérification root motion ignorée.")
+# Configurer le frame range de la scène pour le bake
+bpy.context.scene.frame_start = frame_start
+bpy.context.scene.frame_end   = frame_end
 
-# ─── 6. Pousser "Jump" en NLA strip sur l'armature GLB ───────────────────────
-bpy.ops.object.select_all(action='DESELECT')
-glb_arm.select_set(True)
+# ─── 5. Muter les NLA tracks du GLB (évite interférence pendant le bake) ─────
 bpy.context.view_layer.objects.active = glb_arm
+glb_arm.select_set(True)
+if glb_arm.animation_data:
+    for track in glb_arm.animation_data.nla_tracks:
+        track.mute = True
+print("[ECHO] NLA tracks GLB mutés temporairement.")
 
+# ─── 6. Ajouter des contraintes COPY_TRANSFORMS sur chaque bone GLB ──────────
+# La contrainte copie la pose worldspace du bone FBX correspondant.
+# Les noms de bones Mixamo sont identiques dans GLB et FBX (mixamorig:NomDuBone).
+bpy.ops.object.mode_set(mode='POSE')
+matched = 0
+for pose_bone in glb_arm.pose.bones:
+    if pose_bone.name in fbx_arm.pose.bones:
+        ct = pose_bone.constraints.new(type='COPY_TRANSFORMS')
+        ct.name = "RETARGET_JUMP"
+        ct.target = fbx_arm
+        ct.subtarget = pose_bone.name
+        matched += 1
+bpy.ops.object.mode_set(mode='OBJECT')
+print(f"[ECHO] {matched} bones avec contrainte COPY_TRANSFORMS.")
+assert matched > 0, "[ERREUR] Aucun bone correspondant trouvé entre GLB et FBX."
+
+# ─── 7. Bake worldspace → nouvelle action "Jump" sur le GLB armature ─────────
+# visual_keying=True : capture la pose visuelle réelle (après contraintes),
+# pas les valeurs brutes des FCurves. C'est ce qui garantit la correction
+# du décalage de bone roll entre FBX et GLB.
+bpy.context.view_layer.objects.active = glb_arm
+bpy.ops.object.mode_set(mode='POSE')
+bpy.ops.pose.select_all(action='SELECT')
+
+bpy.ops.nla.bake(
+    frame_start=frame_start,
+    frame_end=frame_end,
+    step=1,
+    only_selected=False,
+    visual_keying=True,
+    clear_constraints=True,   # supprime les contraintes RETARGET_JUMP après bake
+    clear_parents=False,
+    use_current_action=False, # crée une nouvelle action (ne pas écraser les NLA)
+    bake_types={'POSE'},
+)
+bpy.ops.object.mode_set(mode='OBJECT')
+print("[ECHO] Bake worldspace terminé.")
+
+# ─── 8. Renommer l'action cuite en "Jump" ────────────────────────────────────
+baked_action = glb_arm.animation_data.action
+assert baked_action, "[ERREUR] Pas d'action cuite trouvée sur le GLB armature après bake."
+baked_action.name = "Jump"
+glb_arm.animation_data.action = None  # détacher — sera gérée via NLA uniquement
+print("[ECHO] Action cuite renommée en 'Jump'.")
+
+# ─── 9. Remettre les NLA tracks GLB actifs ───────────────────────────────────
+if glb_arm.animation_data:
+    for track in glb_arm.animation_data.nla_tracks:
+        track.mute = False
+
+# ─── 10. Pousser "Jump" en NLA track sur le GLB armature ─────────────────────
 if not glb_arm.animation_data:
     glb_arm.animation_data_create()
 
-# Vérifier s'il existe déjà un track "Jump" en NLA et le supprimer
+# Nettoyer les anciens tracks "Jump" si présents
 for track in list(glb_arm.animation_data.nla_tracks):
     for strip in list(track.strips):
         if strip.name == "Jump" or (strip.action and strip.action.name == "Jump"):
@@ -108,45 +156,42 @@ for track in list(glb_arm.animation_data.nla_tracks):
     if not track.strips:
         glb_arm.animation_data.nla_tracks.remove(track)
 
-# API directe — ne nécessite pas l'éditeur NLA actif
 jump_action = bpy.data.actions["Jump"]
-nla_track = glb_arm.animation_data.nla_tracks.new()
+nla_track  = glb_arm.animation_data.nla_tracks.new()
 nla_track.name = "Jump"
-nla_strip = nla_track.strips.new(name="Jump", start=1, action=jump_action)
+nla_strip = nla_track.strips.new(name="Jump", start=frame_start, action=jump_action)
 glb_arm.animation_data.action = None
-print(f"[ECHO] NLA track 'Jump' créé : {nla_strip.frame_start:.0f}→{nla_strip.frame_end:.0f} frames.")
+print(f"[ECHO] NLA track 'Jump' créé : {nla_strip.frame_start:.0f}→{nla_strip.frame_end:.0f}")
 
-# ─── 7. Supprimer les objets FBX temporaires ─────────────────────────────────
-fbx_arm = next((o for o in bpy.data.objects
-                if o.type == 'ARMATURE' and o.name != glb_arm.name), None)
-
-fbx_objects = []
-if fbx_arm:
-    for obj in bpy.data.objects:
-        for mod in obj.modifiers:
-            if mod.type == 'ARMATURE' and mod.object == fbx_arm:
+# ─── 11. Supprimer les objets FBX temporaires ────────────────────────────────
+fbx_objects = [o for o in bpy.data.objects
+               if o.type == 'ARMATURE' and o != glb_arm]
+for obj in list(bpy.data.objects):
+    for mod in obj.modifiers:
+        if mod.type == 'ARMATURE' and mod.object in fbx_objects:
+            if obj not in fbx_objects:
                 fbx_objects.append(obj)
-    fbx_objects.append(fbx_arm)
+            break
 
 if fbx_objects:
     bpy.ops.object.select_all(action='DESELECT')
     for obj in fbx_objects:
-        obj.select_set(True)
+        if obj.name in bpy.data.objects:
+            obj.select_set(True)
     bpy.ops.object.delete(use_global=False)
     print(f"[ECHO] {len(fbx_objects)} objet(s) FBX supprimé(s).")
 else:
     print("[WARN] Aucun objet FBX à supprimer.")
 
-# ─── 8. Vérification avant export ────────────────────────────────────────────
-print("[ECHO] Actions finales :")
+# ─── 12. Vérification avant export ───────────────────────────────────────────
+print("\n[ECHO] Actions finales :")
 for a in sorted(bpy.data.actions, key=lambda x: x.name):
     print(f"  - '{a.name}'")
-
-assert bpy.data.actions.get("Jump"), "[ERREUR] Action 'Jump' absente avant export — annulation."
 total_actions = len(bpy.data.actions)
 print(f"[ECHO] Total : {total_actions} actions (attendu : 18)")
+assert bpy.data.actions.get("Jump"), "[ERREUR] Action 'Jump' absente avant export — annulation."
 
-# ─── 9. Exporter en GLB ──────────────────────────────────────────────────────
+# ─── 13. Exporter en GLB ─────────────────────────────────────────────────────
 bpy.ops.export_scene.gltf(
     filepath=GLB_SOURCE,
     export_format='GLB',
@@ -157,7 +202,7 @@ bpy.ops.export_scene.gltf(
 )
 print(f"[ECHO] GLB exporté → {GLB_SOURCE}")
 
-# ─── 10. Copier vers godot_project ───────────────────────────────────────────
+# ─── 14. Copier vers godot_project ───────────────────────────────────────────
 shutil.copy2(GLB_SOURCE, GLB_GODOT)
 print(f"[ECHO] GLB copié   → {GLB_GODOT}")
 print("[ECHO] Terminé. Dans Godot : clic droit sur ybot.glb > Reimport.")
