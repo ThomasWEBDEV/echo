@@ -27,6 +27,12 @@ public partial class Personnage : CharacterBody3D
 				_ybot = GetNode<Node3D>("ybot");
 				_ChangerEtat("Idle");
 
+				// Jump en loop pour éviter le gel sur la dernière frame si le saut est plus long que l'animation
+				var animPlayer = GetNode<AnimationPlayer>("ybot/AnimationPlayer");
+				var jumpAnim = animPlayer.GetAnimation("Jump");
+				if (jumpAnim != null)
+						jumpAnim.LoopMode = Animation.LoopModeEnum.Linear;
+
 				// Capturer la souris au démarrage
 				Input.MouseMode = Input.MouseModeEnum.Captured;
 		}
