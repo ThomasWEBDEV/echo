@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dniveau0test01"]
+[gd_scene format=3 uid="uid://df1458di0xg1u"]
 
 [ext_resource type="PackedScene" uid="uid://c3xuge2vou8ip" path="res://scenes/personnage.tscn" id="1_perso"]
 
@@ -11,20 +11,21 @@ size = Vector3(100, 0.2, 100)
 [sub_resource type="StandardMaterial3D" id="Mat_sol"]
 albedo_color = Color(0.3, 0.3, 0.4, 1)
 
-[node name="NiveauTest" type="Node3D"]
+[node name="NiveauTest" type="Node3D" unique_id=1082410495]
 
-[node name="Personnage" parent="." instance=ExtResource("1_perso")]
+[node name="Personnage" parent="." unique_id=1327384364 instance=ExtResource("1_perso")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1678518396]
 transform = Transform3D(1, 0, 0, 0, 0.7071068, -0.7071068, 0, 0.7071068, 0.7071068, 0, 0, 0)
 light_energy = 1.5
 
-[node name="Sol" type="StaticBody3D" parent="."]
+[node name="Sol" type="StaticBody3D" parent="." unique_id=610037934]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sol"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sol" unique_id=593319470]
 shape = SubResource("BoxShape3D_sol")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Sol"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Sol" unique_id=37827739]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0185256, -4.7683716e-07, -0.010120153)
 mesh = SubResource("BoxMesh_sol")
 surface_material_override/0 = SubResource("Mat_sol")
