@@ -8,8 +8,10 @@ radius = 0.4
 height = 1.8
 
 [node name="Personnage" type="CharacterBody3D" unique_id=575533026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0054852366, 0, 0)
 floor_snap_length = 0.5
 script = ExtResource("1_kmy4e")
+VitesseCourse = 4.5
 ForceSaut = 4.5
 
 [node name="ybot" parent="." unique_id=1480278627 instance=ExtResource("1_4pkna")]
