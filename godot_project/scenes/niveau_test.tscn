@@ -26,6 +26,5 @@ light_energy = 1.5
 shape = SubResource("BoxShape3D_sol")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Sol" unique_id=37827739]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0185256, -4.7683716e-07, -0.010120153)
 mesh = SubResource("BoxMesh_sol")
 surface_material_override/0 = SubResource("Mat_sol")
