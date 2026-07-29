@@ -10,10 +10,11 @@ public partial class Personnage : CharacterBody3D
 	// Sensibilité de la souris
 	[Export] public float SensibiliteSouris = 0.002f;
 	// Limites verticales de la caméra en degrés
-	[Export] public float PitchMin = -89.0f;
-	[Export] public float PitchMax = 89.0f;
+	[Export] public float PitchMin = -50.0f;
+	[Export] public float PitchMax = 25.0f;
 
-	private Node3D _tete;
+	private SpringArm3D _springArm;
+	private Node3D _ybot;
 	private RayCast3D _rayCast;
 	private AnimationTree _animTree;
 	private AnimationNodeStateMachinePlayback _sm;
@@ -24,10 +25,9 @@ public partial class Personnage : CharacterBody3D
 
 	public override void _Ready()
 	{
-		_tete = GetNode<Node3D>("Tete");
-		_rayCast = GetNode<RayCast3D>("Tete/Camera3D/RayCast3D");
-
-		// Le mesh ybot reste actif en arrière-plan (utile pour le futur multijoueur)
+		_springArm = GetNode<SpringArm3D>("SpringArm3D");
+		_ybot = GetNode<Node3D>("ybot");
+		_rayCast = GetNode<RayCast3D>("SpringArm3D/Camera3D/RayCast3D");
 		_animTree = GetNode<AnimationTree>("ybot/AnimationTree");
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
@@ -38,25 +38,23 @@ public partial class Personnage : CharacterBody3D
 
 	public override void _Input(InputEvent @event)
 	{
-		// Rotation caméra à la souris
+		// Rotation caméra à la souris (TPS — SpringArm3D tourne)
 		if (@event is InputEventMouseMotion mouseMotion && Input.MouseMode == Input.MouseModeEnum.Captured)
 		{
-			// Yaw horizontal — le body entier tourne, ce qui oriente le déplacement WASD
-			RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+			_springArm.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
 
-			// Pitch vertical — seule la tête s'incline, le body reste droit
 			float pitch = Mathf.Clamp(
-				_tete.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
+				_springArm.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
 				PitchMin, PitchMax
 			);
-			_tete.RotationDegrees = new Vector3(pitch, 0, 0);
+			_springArm.RotationDegrees = new Vector3(pitch, _springArm.RotationDegrees.Y, 0);
 		}
 
-		// Échap : libérer la souris (accès menu)
+		// Échap : libérer la souris
 		if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.Escape)
 			Input.MouseMode = Input.MouseModeEnum.Visible;
 
-		// Clic gauche sur fond visible : recapturer la souris sans tirer
+		// Clic gauche sur fond visible : recapturer sans déclencher un tir
 		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed
 			&& mouseBtn.ButtonIndex == MouseButton.Left
 			&& Input.MouseMode == Input.MouseModeEnum.Visible)
@@ -73,15 +71,21 @@ public partial class Personnage : CharacterBody3D
 		if (!IsOnFloor())
 			velocity.Y -= Gravite * (float)delta;
 
-		// Déplacement WASD relatif à l'orientation du body (FPS standard)
+		// Déplacement WASD relatif à la caméra (plan horizontal)
+		Vector3 camAvant = -_springArm.GlobalBasis.Z;
+		camAvant.Y = 0;
+		if (camAvant.LengthSquared() > 0.001f) camAvant = camAvant.Normalized();
+
+		Vector3 camDroite = _springArm.GlobalBasis.X;
+		camDroite.Y = 0;
+		if (camDroite.LengthSquared() > 0.001f) camDroite = camDroite.Normalized();
+
 		Vector2 inputAxes = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-		// ui_up (W) donne Y=-1 → on veut avancer → -GlobalBasis.Z
-		// -GlobalBasis.Z * -(-1) = -GlobalBasis.Z ✓
-		Vector3 direction = (-GlobalBasis.Z * (-inputAxes.Y) + GlobalBasis.X * inputAxes.X);
+		Vector3 direction = camAvant * (-inputAxes.Y) + camDroite * inputAxes.X;
 		if (direction.LengthSquared() > 0.01f)
 			direction = direction.Normalized();
 
-		// Shift gauche = marche lente, défaut = course (comme CS2)
+		// Shift = marche lente, défaut = course
 		bool marcher = Input.IsPhysicalKeyPressed(Key.Shift);
 		float vitesse = marcher ? VitesseMarche : VitesseCourse;
 
@@ -89,11 +93,21 @@ public partial class Personnage : CharacterBody3D
 		{
 			velocity.X = direction.X * vitesse;
 			velocity.Z = direction.Z * vitesse;
+
+			if (IsOnFloor() && !_enSaut)
+				_ChangerEtat(marcher ? "Walking" : "Running");
+
+			// Rotation du mesh vers la direction de déplacement
+			Vector3 cible = _ybot.GlobalPosition - new Vector3(direction.X, 0, direction.Z);
+			_ybot.LookAt(cible, Vector3.Up);
 		}
 		else
 		{
 			velocity.X = 0;
 			velocity.Z = 0;
+
+			if (IsOnFloor() && !_enSaut)
+				_ChangerEtat("Idle");
 		}
 
 		// Saut
@@ -106,16 +120,7 @@ public partial class Personnage : CharacterBody3D
 		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
 			_enSaut = false;
 
-		// Mise à jour des animations du mesh ybot (invisible en FPS, utile pour le futur)
-		if (IsOnFloor() && !_enSaut)
-		{
-			if (direction.LengthSquared() > 0.01f)
-				_ChangerEtat(marcher ? "Walking" : "Running");
-			else
-				_ChangerEtat("Idle");
-		}
-
-		// Tir : clic gauche quand la souris est capturée
+		// Tir : clic gauche, RayCast depuis le centre de la caméra
 		if (Input.IsActionJustPressed("tirer") && Input.MouseMode == Input.MouseModeEnum.Captured && !_sourisRecaptureeCeFrame)
 			_Tirer();
 
@@ -125,7 +130,7 @@ public partial class Personnage : CharacterBody3D
 		MoveAndSlide();
 	}
 
-	// Détecte l'impact via RayCast et le signale — la logique de dégâts sera dans les cibles
+	// Détecte l'impact via RayCast — la logique de dégâts sera dans les cibles
 	private void _Tirer()
 	{
 		if (!_rayCast.IsColliding()) return;
