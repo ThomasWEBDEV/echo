@@ -8,6 +8,8 @@ public partial class Personnage : CharacterBody3D
 	[Export] public float ForceSaut = 8.0f;
 	// Force du saut en course — réglable indépendamment pour coller à la durée de l'animation RunningJump
 	[Export] public float ForceSautCourse = 3.0f;
+	// Vitesse de lecture de l'animation RunningJump (1.0 = normal, 0.8 = 20% plus lent)
+	[Export] public float VitesseAnimSautCourse = 0.85f;
 	// Sensibilité de la souris (réglable dans l'inspecteur)
 	[Export] public float SensibiliteSouris = 0.003f;
 	// Limites verticales de la caméra en degrés
@@ -16,6 +18,7 @@ public partial class Personnage : CharacterBody3D
 
 	private AnimationTree _animTree;
 	private AnimationNodeStateMachinePlayback _sm;
+	private AnimationPlayer _animPlayer;
 	private string _etatCourant = "";
 	private SpringArm3D _springArm;
 	private Node3D _ybot;
@@ -30,6 +33,7 @@ public partial class Personnage : CharacterBody3D
 		_animTree = GetNode<AnimationTree>("ybot/AnimationTree");
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
+		_animPlayer = GetNode<AnimationPlayer>("ybot/AnimationPlayer");
 		_springArm = GetNode<SpringArm3D>("SpringArm3D");
 		_ybot = GetNode<Node3D>("ybot");
 		_ChangerEtat("Idle");
@@ -93,13 +97,24 @@ public partial class Personnage : CharacterBody3D
 			_sautEnCourse = courir && direction.Length() > 0.1f;
 			velocity.Y = _sautEnCourse ? ForceSautCourse : ForceSaut;
 			_enSaut = true;
-			_ChangerEtat(_sautEnCourse ? "RunningJump" : "Jump");
+			if (_sautEnCourse)
+			{
+				_animPlayer.SpeedScale = VitesseAnimSautCourse;
+				_ChangerEtat("RunningJump");
+			}
+			else
+			{
+				_ChangerEtat("Jump");
+			}
 		}
 
 		// Atterrissage : on quitte l'état saut seulement quand on touche le sol
 		// en descendant (velocity.Y <= 0 évite de sortir du saut dès le décollage)
 		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
+		{
 			_enSaut = false;
+			_animPlayer.SpeedScale = 1.0f;
+		}
 
 		if (direction.Length() > 0.1f)
 		{
