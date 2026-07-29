@@ -15,34 +15,34 @@ size = Vector3(100, 0.2, 100)
 albedo_color = Color(0.3, 0.3, 0.4, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nord"]
-size = Vector3(40.6, 6, 0.3)
+size = Vector3(80.6, 6, 0.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_nord"]
-size = Vector3(40.6, 6, 0.3)
+size = Vector3(80.6, 6, 0.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_sud"]
-size = Vector3(40.6, 6, 0.3)
+size = Vector3(80.6, 6, 0.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sud"]
-size = Vector3(40.6, 6, 0.3)
+size = Vector3(80.6, 6, 0.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ouest"]
-size = Vector3(0.3, 6, 20)
+size = Vector3(0.3, 6, 40)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ouest"]
-size = Vector3(0.3, 6, 20)
+size = Vector3(0.3, 6, 40)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_est"]
-size = Vector3(0.3, 6, 20)
+size = Vector3(0.3, 6, 40)
 
 [sub_resource type="BoxMesh" id="BoxMesh_est"]
-size = Vector3(0.3, 6, 20)
+size = Vector3(0.3, 6, 40)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_plafond"]
-size = Vector3(40.6, 0.2, 20.6)
+size = Vector3(80.6, 0.2, 40.6)
 
 [sub_resource type="BoxMesh" id="BoxMesh_plafond"]
-size = Vector3(40.6, 0.2, 20.6)
+size = Vector3(80.6, 0.2, 40.6)
 
 [node name="SalleEntrainement" type="Node3D"]
 
@@ -63,7 +63,7 @@ mesh = SubResource("BoxMesh_sol")
 surface_material_override/0 = SubResource("Mat_sol")
 
 [node name="MurNord" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -20)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MurNord"]
 shape = SubResource("BoxShape3D_nord")
@@ -73,7 +73,7 @@ mesh = SubResource("BoxMesh_nord")
 surface_material_override/0 = SubResource("Mat_mur")
 
 [node name="MurSud" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 20)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MurSud"]
 shape = SubResource("BoxShape3D_sud")
@@ -83,7 +83,7 @@ mesh = SubResource("BoxMesh_sud")
 surface_material_override/0 = SubResource("Mat_mur")
 
 [node name="MurOuest" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 3, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MurOuest"]
 shape = SubResource("BoxShape3D_ouest")
@@ -93,7 +93,7 @@ mesh = SubResource("BoxMesh_ouest")
 surface_material_override/0 = SubResource("Mat_mur")
 
 [node name="MurEst" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 3, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MurEst"]
 shape = SubResource("BoxShape3D_est")

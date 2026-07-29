@@ -7,22 +7,56 @@
 radius = 0.4
 height = 1.8
 
+[sub_resource type="BoxMesh" id="BoxMesh_fusil"]
+size = Vector3(0.04, 0.08, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_fusil"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+
 [node name="Personnage" type="CharacterBody3D" unique_id=575533026]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0054852366, 0, 0)
 floor_snap_length = 0.5
 script = ExtResource("1_kmy4e")
-VitesseCourse = 4.5
-ForceSaut = 4.5
+VitesseCourse = 5.5
+ForceSaut = 5.0
 
 [node name="ybot" parent="." unique_id=1480278627 instance=ExtResource("1_4pkna")]
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1534788267]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_kmy4e")
 
-[node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=1352477918]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
-spring_length = 4.0
+[node name="Tete" type="Node3D" parent="." unique_id=1234567890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
 
-[node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=1683377568]
+[node name="Camera3D" type="Camera3D" parent="Tete" unique_id=1683377568]
 current = true
+
+[node name="RayCast3D" type="RayCast3D" parent="Tete/Camera3D" unique_id=9876543210]
+target_position = Vector3(0, 0, -100)
+enabled = true
+
+[node name="ViewModel" type="Node3D" parent="Tete/Camera3D" unique_id=1111111111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.18, -0.35)
+
+[node name="FusilMesh" type="MeshInstance3D" parent="Tete/Camera3D/ViewModel" unique_id=2222222222]
+mesh = SubResource("BoxMesh_fusil")
+surface_material_override/0 = SubResource("Mat_fusil")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=3333333333]
+
+[node name="Crosshair" type="Label" parent="HUD" unique_id=4444444444]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+offset_left = -6.0
+offset_top = -12.0
+offset_right = 6.0
+offset_bottom = 12.0
+text = "+"
+horizontal_alignment = 1
+vertical_alignment = 1
