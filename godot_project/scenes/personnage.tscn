@@ -24,16 +24,23 @@ shape = SubResource("CapsuleShape3D_kmy4e")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 spring_length = 4.0
 
-[node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=1683377568]
+[node name="CameraTPS" type="Camera3D" parent="SpringArm3D" unique_id=1683377568]
 current = true
 
-[node name="RayCast3D" type="RayCast3D" parent="SpringArm3D/Camera3D" unique_id=9876543210]
+[node name="Tete" type="Node3D" parent="." unique_id=2000000001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
+
+[node name="CameraFPS" type="Camera3D" parent="Tete" unique_id=2000000002]
+current = false
+
+[node name="RayCast3D" type="RayCast3D" parent="Tete/CameraFPS" unique_id=9876543210]
 target_position = Vector3(0, 0, -100)
 enabled = true
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=3333333333]
 
 [node name="CrosshairH" type="ColorRect" parent="HUD" unique_id=4444444444]
+visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -47,6 +54,7 @@ offset_bottom = 1.0
 color = Color(1, 1, 1, 0.9)
 
 [node name="CrosshairV" type="ColorRect" parent="HUD" unique_id=5555555555]
+visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
