@@ -14,45 +14,83 @@ public partial class Personnage : CharacterBody3D
 	[Export] public float PitchMax = 25.0f;
 
 	private SpringArm3D _springArm;
+	private Node3D _tete;
+	private Camera3D _cameraTPS;
+	private Camera3D _cameraFPS;
 	private Node3D _ybot;
 	private RayCast3D _rayCast;
 	private AnimationTree _animTree;
 	private AnimationNodeStateMachinePlayback _sm;
+	private ColorRect _crosshairH;
+	private ColorRect _crosshairV;
+
 	private string _etatCourant = "";
 	private bool _enSaut = false;
+	// false = TPS (défaut), true = FPS
+	private bool _modeFPS = false;
 	// Empêche de tirer au frame où on recapture la souris
 	private bool _sourisRecaptureeCeFrame = false;
 
 	public override void _Ready()
 	{
-		_springArm = GetNode<SpringArm3D>("SpringArm3D");
-		_ybot = GetNode<Node3D>("ybot");
-		_rayCast = GetNode<RayCast3D>("SpringArm3D/Camera3D/RayCast3D");
-		_animTree = GetNode<AnimationTree>("ybot/AnimationTree");
+		_springArm  = GetNode<SpringArm3D>("SpringArm3D");
+		_tete       = GetNode<Node3D>("Tete");
+		_cameraTPS  = GetNode<Camera3D>("SpringArm3D/CameraTPS");
+		_cameraFPS  = GetNode<Camera3D>("Tete/CameraFPS");
+		_rayCast    = GetNode<RayCast3D>("Tete/CameraFPS/RayCast3D");
+		_ybot       = GetNode<Node3D>("ybot");
+		_animTree   = GetNode<AnimationTree>("ybot/AnimationTree");
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
 		_ChangerEtat("Idle");
+
+		_crosshairH = GetNode<ColorRect>("HUD/CrosshairH");
+		_crosshairV = GetNode<ColorRect>("HUD/CrosshairV");
+
+		// TPS par défaut : caméra TPS active, ybot visible, viseur caché
+		_cameraTPS.MakeCurrent();
+		_crosshairH.Visible = false;
+		_crosshairV.Visible = false;
 
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
 	public override void _Input(InputEvent @event)
 	{
-		// Rotation caméra à la souris (TPS — SpringArm3D tourne)
+		// Rotation caméra à la souris
 		if (@event is InputEventMouseMotion mouseMotion && Input.MouseMode == Input.MouseModeEnum.Captured)
 		{
-			_springArm.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
-
-			float pitch = Mathf.Clamp(
-				_springArm.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
-				PitchMin, PitchMax
-			);
-			_springArm.RotationDegrees = new Vector3(pitch, _springArm.RotationDegrees.Y, 0);
+			if (_modeFPS)
+			{
+				// FPS : la tête tourne en Y, la caméra FPS pitch en X
+				_tete.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+				float pitch = Mathf.Clamp(
+					_cameraFPS.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
+					PitchMin, PitchMax
+				);
+				_cameraFPS.RotationDegrees = new Vector3(pitch, 0, 0);
+			}
+			else
+			{
+				// TPS : le SpringArm3D tourne
+				_springArm.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+				float pitch = Mathf.Clamp(
+					_springArm.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
+					PitchMin, PitchMax
+				);
+				_springArm.RotationDegrees = new Vector3(pitch, _springArm.RotationDegrees.Y, 0);
+			}
 		}
 
-		// Échap : libérer la souris
-		if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.Escape)
-			Input.MouseMode = Input.MouseModeEnum.Visible;
+		if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+		{
+			// F : basculer entre TPS et FPS
+			if (keyEvent.Keycode == Key.F)
+				_BasculerMode();
+			// Échap : libérer la souris
+			else if (keyEvent.Keycode == Key.Escape)
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+		}
 
 		// Clic gauche sur fond visible : recapturer sans déclencher un tir
 		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed
@@ -71,12 +109,13 @@ public partial class Personnage : CharacterBody3D
 		if (!IsOnFloor())
 			velocity.Y -= Gravite * (float)delta;
 
-		// Déplacement WASD relatif à la caméra (plan horizontal)
-		Vector3 camAvant = -_springArm.GlobalBasis.Z;
+		// Axes de déplacement selon le mode actif
+		Node3D referenceCamera = _modeFPS ? _tete : _springArm;
+		Vector3 camAvant = -referenceCamera.GlobalBasis.Z;
 		camAvant.Y = 0;
 		if (camAvant.LengthSquared() > 0.001f) camAvant = camAvant.Normalized();
 
-		Vector3 camDroite = _springArm.GlobalBasis.X;
+		Vector3 camDroite = referenceCamera.GlobalBasis.X;
 		camDroite.Y = 0;
 		if (camDroite.LengthSquared() > 0.001f) camDroite = camDroite.Normalized();
 
@@ -120,14 +159,40 @@ public partial class Personnage : CharacterBody3D
 		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
 			_enSaut = false;
 
-		// Tir : clic gauche, RayCast depuis le centre de la caméra
-		if (Input.IsActionJustPressed("tirer") && Input.MouseMode == Input.MouseModeEnum.Captured && !_sourisRecaptureeCeFrame)
+		// Tir : seulement en mode FPS
+		if (_modeFPS && Input.IsActionJustPressed("tirer")
+			&& Input.MouseMode == Input.MouseModeEnum.Captured
+			&& !_sourisRecaptureeCeFrame)
 			_Tirer();
 
 		_sourisRecaptureeCeFrame = false;
 
 		Velocity = velocity;
 		MoveAndSlide();
+	}
+
+	// Bascule entre le mode TPS et le mode FPS
+	private void _BasculerMode()
+	{
+		_modeFPS = !_modeFPS;
+
+		if (_modeFPS)
+		{
+			// Aligner la tête sur la rotation du SpringArm pour éviter un saut de caméra
+			_tete.GlobalRotation = new Vector3(0, _springArm.GlobalRotation.Y, 0);
+			_cameraFPS.RotationDegrees = new Vector3(_springArm.RotationDegrees.X, 0, 0);
+			_cameraFPS.MakeCurrent();
+			_ybot.Visible = false;
+			_crosshairH.Visible = true;
+			_crosshairV.Visible = true;
+		}
+		else
+		{
+			_cameraTPS.MakeCurrent();
+			_ybot.Visible = true;
+			_crosshairH.Visible = false;
+			_crosshairV.Visible = false;
+		}
 	}
 
 	// Détecte l'impact via RayCast — la logique de dégâts sera dans les cibles
