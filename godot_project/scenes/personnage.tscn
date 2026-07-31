@@ -33,9 +33,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
 [node name="CameraFPS" type="Camera3D" parent="Tete" unique_id=2000000002]
 current = false
 
-[node name="RayCast3D" type="RayCast3D" parent="Tete/CameraFPS" unique_id=9876543210]
-target_position = Vector3(0, 0, -100)
-enabled = true
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=3333333333]
 
