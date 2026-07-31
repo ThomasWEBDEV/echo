@@ -18,7 +18,6 @@ public partial class Personnage : CharacterBody3D
 	private Camera3D _cameraTPS;
 	private Camera3D _cameraFPS;
 	private Node3D _ybot;
-	private RayCast3D _rayCast;
 	private AnimationTree _animTree;
 	private AnimationNodeStateMachinePlayback _sm;
 	private ColorRect _crosshairH;
@@ -37,8 +36,7 @@ public partial class Personnage : CharacterBody3D
 		_tete       = GetNode<Node3D>("Tete");
 		_cameraTPS  = GetNode<Camera3D>("SpringArm3D/CameraTPS");
 		_cameraFPS  = GetNode<Camera3D>("Tete/CameraFPS");
-		_rayCast    = GetNode<RayCast3D>("Tete/CameraFPS/RayCast3D");
-		_ybot       = GetNode<Node3D>("ybot");
+_ybot       = GetNode<Node3D>("ybot");
 		_animTree   = GetNode<AnimationTree>("ybot/AnimationTree");
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
@@ -195,13 +193,20 @@ public partial class Personnage : CharacterBody3D
 		}
 	}
 
-	// Détecte l'impact via RayCast — la logique de dégâts sera dans les cibles
+	// Détecte l'impact via raycast physique (sans nœud RayCast3D pour éviter tout rendu)
 	private void _Tirer()
 	{
-		if (!_rayCast.IsColliding()) return;
+		var espace = GetWorld3D().DirectSpaceState;
+		var origine = _cameraFPS.GlobalPosition;
+		var direction = -_cameraFPS.GlobalBasis.Z;
+		var query = PhysicsRayQueryParameters3D.Create(origine, origine + direction * 100f);
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var result = espace.IntersectRay(query);
 
-		GodotObject collider = _rayCast.GetCollider();
-		Vector3 impact = _rayCast.GetCollisionPoint();
+		if (result.Count == 0) return;
+
+		var collider = result["collider"].As<GodotObject>();
+		Vector3 impact = result["position"].As<Vector3>();
 		GD.Print($"[TIRER] {(collider as Node)?.Name} — impact : {impact}");
 
 		// TODO : appeler collider.TakeHit() quand les cibles auront un script de santé
