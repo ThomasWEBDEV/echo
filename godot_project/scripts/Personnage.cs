@@ -209,8 +209,9 @@ _ybot       = GetNode<Node3D>("ybot");
 		Vector3 impact = result["position"].As<Vector3>();
 		GD.Print($"[TIRER] {(collider as Node)?.Name} — impact : {impact}");
 
-		// TODO : appeler collider.TakeHit() quand les cibles auront un script de santé
-		// TODO : instancier particule d'impact à la position impact
+		// Appel TakeHit si le collider est une cible
+		if (collider is Cible cible)
+			cible.TakeHit();
 	}
 
 	private void _ChangerEtat(string nouvelEtat)

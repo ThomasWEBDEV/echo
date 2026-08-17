@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bsalle_entr001"]
 
 [ext_resource type="PackedScene" uid="uid://c3xuge2vou8ip" path="res://scenes/personnage.tscn" id="1_perso"]
+[ext_resource type="PackedScene" uid="uid://cible_tscn001" path="res://scenes/cible.tscn" id="2_cible"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_mur"]
 albedo_color = Color(0.14, 0.17, 0.21, 1)
@@ -156,3 +157,20 @@ shape = SubResource("BoxShape3D_plafond")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Plafond"]
 mesh = SubResource("BoxMesh_plafond")
 surface_material_override/0 = SubResource("Mat_plafond")
+
+[node name="Cibles" type="Node3D" parent="."]
+
+[node name="Cible1" parent="Cibles" instance=ExtResource("2_cible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -14)
+
+[node name="Cible2" parent="Cibles" instance=ExtResource("2_cible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -14)
+
+[node name="Cible3" parent="Cibles" instance=ExtResource("2_cible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -14)
+
+[node name="Cible4" parent="Cibles" instance=ExtResource("2_cible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -12)
+
+[node name="Cible5" parent="Cibles" instance=ExtResource("2_cible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -12)
