@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://cible_tscn001"]
+
+[ext_resource type="Script" path="res://scripts/Cible.cs" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cible"]
+size = Vector3(0.6, 2.0, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cible"]
+size = Vector3(0.6, 2.0, 0.2)
+
+[node name="Cible" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_cible")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("BoxMesh_cible")
