@@ -64,7 +64,39 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.7071068, -0.7071068, 0, 0.7071068, 0.7071068, 0, 5, 0)
-light_energy = 1.5
+light_color = Color(0.7, 0.85, 1.0, 1)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="LumiereNord" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.2, -17)
+light_color = Color(0.2, 0.75, 1.0, 1)
+light_energy = 3.5
+omni_range = 18.0
+
+[node name="LumiereSud" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.2, 17)
+light_color = Color(0.2, 0.75, 1.0, 1)
+light_energy = 3.5
+omni_range = 18.0
+
+[node name="LumiereOuest" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 5.2, 0)
+light_color = Color(0.4, 0.5, 1.0, 1)
+light_energy = 3.0
+omni_range = 18.0
+
+[node name="LumiereEst" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 5.2, 0)
+light_color = Color(0.4, 0.5, 1.0, 1)
+light_energy = 3.0
+omni_range = 18.0
+
+[node name="LumiereCentre" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.8, 0)
+light_color = Color(0.85, 0.90, 1.0, 1)
+light_energy = 2.0
+omni_range = 30.0
 
 [node name="Sol" type="StaticBody3D" parent="."]
 
