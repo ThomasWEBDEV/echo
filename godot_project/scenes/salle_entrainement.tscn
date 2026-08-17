@@ -3,7 +3,18 @@
 [ext_resource type="PackedScene" uid="uid://c3xuge2vou8ip" path="res://scenes/personnage.tscn" id="1_perso"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_mur"]
-albedo_color = Color(0.18, 0.20, 0.23, 1)
+albedo_color = Color(0.14, 0.17, 0.21, 1)
+metallic = 0.7
+metallic_specular = 0.6
+roughness = 0.45
+
+[sub_resource type="StandardMaterial3D" id="Mat_plafond"]
+albedo_color = Color(0.12, 0.15, 0.20, 1)
+metallic = 0.8
+roughness = 0.35
+emission_enabled = true
+emission = Color(0.2, 0.65, 1.0, 1)
+emission_energy_multiplier = 0.6
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_sol"]
 size = Vector3(100, 0.2, 100)
@@ -12,7 +23,9 @@ size = Vector3(100, 0.2, 100)
 size = Vector3(100, 0.2, 100)
 
 [sub_resource type="StandardMaterial3D" id="Mat_sol"]
-albedo_color = Color(0.3, 0.3, 0.4, 1)
+albedo_color = Color(0.20, 0.22, 0.28, 1)
+metallic = 0.35
+roughness = 0.65
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nord"]
 size = Vector3(80.6, 6, 0.3)
@@ -110,4 +123,4 @@ shape = SubResource("BoxShape3D_plafond")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Plafond"]
 mesh = SubResource("BoxMesh_plafond")
-surface_material_override/0 = SubResource("Mat_mur")
+surface_material_override/0 = SubResource("Mat_plafond")
