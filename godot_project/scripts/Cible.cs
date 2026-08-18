@@ -6,10 +6,14 @@ public partial class Cible : StaticBody3D
 	// Points de vie et dégâts par tir — réglables dans l'inspecteur
 	[Export] public float PointsDeVie = 100f;
 	[Export] public float DegatsParTir = 25f;
+	// Respawn automatique à la position d'origine après destruction
+	[Export] public bool  AutoRespawn  = true;
+	[Export] public float DelaiRespawn = 5.0f;
 
 	private MeshInstance3D _mesh;
 	private StandardMaterial3D _materiau;
 	private float _pvActuels;
+	private bool  _detruite = false;
 
 	// Dégradé de couleur selon les PV : jaune → orange → rouge
 	private static readonly Color CouleurMaxPV = new Color(0.9f, 0.70f, 0.05f);
@@ -34,6 +38,9 @@ public partial class Cible : StaticBody3D
 	// Appelé par Personnage._Tirer() lors d'un impact
 	public void TakeHit(float degats = -1f)
 	{
+		// Ignorer les tirs pendant le délai de respawn
+		if (_detruite) return;
+
 		float d = degats < 0 ? DegatsParTir : degats;
 		_pvActuels -= d;
 		GD.Print($"[CIBLE] {Name} : {_pvActuels}/{PointsDeVie} PV");
@@ -83,21 +90,58 @@ public partial class Cible : StaticBody3D
 
 	private void _Detruire()
 	{
-		GD.Print($"[CIBLE] {Name} détruite !");
+		_detruite = true;
+		ScoreManager.EnregistrerDestruction();
+		GD.Print($"[CIBLE] {Name} détruite ! (score : {ScoreManager.CiblesDetruites})");
 
 		// Désactiver la collision immédiatement (différé pour éviter les erreurs physiques)
 		var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
 		if (col != null)
 			col.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
 
-		// Assombrir la cible puis la supprimer
+		// Assombrir la cible
 		_materiau.AlbedoColor = new Color(0.25f, 0.25f, 0.25f);
 		_materiau.EmissionEnergyMultiplier = 0f;
 
-		GetTree().CreateTimer(0.3).Timeout += () =>
+		if (AutoRespawn)
+		{
+			// Réapparition à la position d'origine après le délai
+			GD.Print($"[CIBLE] {Name} réapparaît dans {DelaiRespawn}s...");
+			GetTree().CreateTimer(DelaiRespawn).Timeout += _Reinitialiser;
+		}
+		else
+		{
+			GetTree().CreateTimer(0.3).Timeout += () =>
+			{
+				if (IsInstanceValid(this))
+					QueueFree();
+			};
+		}
+	}
+
+	// Réinitialise la cible à sa pleine santé (respawn sur place)
+	private void _Reinitialiser()
+	{
+		if (!IsInstanceValid(this)) return;
+
+		_pvActuels = PointsDeVie;
+		_detruite  = false;
+
+		// Réactiver la collision
+		var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+		if (col != null)
+			col.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+
+		// Flash blanc de réapparition puis retour à la couleur normale
+		_materiau.AlbedoColor = new Color(1f, 1f, 1f);
+		_materiau.EmissionEnergyMultiplier = 2.0f;
+
+		GetTree().CreateTimer(0.2).Timeout += () =>
 		{
 			if (IsInstanceValid(this))
-				QueueFree();
+				_AppliquerCouleurRepos();
 		};
+
+		GD.Print($"[CIBLE] {Name} réinitialisée !");
 	}
 }
