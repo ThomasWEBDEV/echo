@@ -12,6 +12,9 @@ public partial class Personnage : CharacterBody3D
 	// Limites verticales de la caméra en degrés
 	[Export] public float PitchMin = -50.0f;
 	[Export] public float PitchMax = 25.0f;
+	// Munitions — réglables dans l'inspecteur
+	[Export] public int   MaxMunitions       = 30;
+	[Export] public float TempsRechargement  = 2.0f;
 
 	private SpringArm3D _springArm;
 	private Node3D _tete;
@@ -29,6 +32,10 @@ public partial class Personnage : CharacterBody3D
 	private bool _modeFPS = false;
 	// Empêche de tirer au frame où on recapture la souris
 	private bool _sourisRecaptureeCeFrame = false;
+
+	// Munitions
+	private int  _munitionsActuelles;
+	private bool _enRechargement = false;
 
 	public override void _Ready()
 	{
@@ -50,6 +57,7 @@ _ybot       = GetNode<Node3D>("ybot");
 		_crosshairH.Visible = false;
 		_crosshairV.Visible = false;
 
+		_munitionsActuelles = MaxMunitions;
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
@@ -88,6 +96,10 @@ _ybot       = GetNode<Node3D>("ybot");
 			// Échap : libérer la souris
 			else if (keyEvent.Keycode == Key.Escape)
 				Input.MouseMode = Input.MouseModeEnum.Visible;
+			// R : rechargement manuel
+			else if (keyEvent.Keycode == Key.R && _modeFPS && !_enRechargement
+			         && _munitionsActuelles < MaxMunitions)
+				_Recharger();
 		}
 
 		// Clic gauche sur fond visible : recapturer sans déclencher un tir
@@ -157,11 +169,16 @@ _ybot       = GetNode<Node3D>("ybot");
 		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
 			_enSaut = false;
 
-		// Tir : seulement en mode FPS
+		// Tir : seulement en mode FPS, avec munitions disponibles
 		if (_modeFPS && Input.IsActionJustPressed("tirer")
 			&& Input.MouseMode == Input.MouseModeEnum.Captured
 			&& !_sourisRecaptureeCeFrame)
-			_Tirer();
+		{
+			if (_munitionsActuelles > 0 && !_enRechargement)
+				_Tirer();
+			else if (!_enRechargement)
+				_Recharger(); // rechargement auto si à court
+		}
 
 		_sourisRecaptureeCeFrame = false;
 
@@ -196,6 +213,10 @@ _ybot       = GetNode<Node3D>("ybot");
 	// Détecte l'impact via raycast physique (sans nœud RayCast3D pour éviter tout rendu)
 	private void _Tirer()
 	{
+		_munitionsActuelles--;
+		ScoreManager.EnregistrerTir();
+		GD.Print($"[TIRER] Munitions : {_munitionsActuelles}/{MaxMunitions}");
+
 		var espace = GetWorld3D().DirectSpaceState;
 		var origine = _cameraFPS.GlobalPosition;
 		var direction = -_cameraFPS.GlobalBasis.Z;
@@ -212,6 +233,20 @@ _ybot       = GetNode<Node3D>("ybot");
 		// Appel TakeHit si le collider est une cible
 		if (collider is Cible cible)
 			cible.TakeHit();
+	}
+
+	// Rechargement avec délai (auto ou manuel avec R)
+	private void _Recharger()
+	{
+		_enRechargement = true;
+		GD.Print($"[RECHARGER] Rechargement en cours ({TempsRechargement}s)...");
+
+		GetTree().CreateTimer(TempsRechargement).Timeout += () =>
+		{
+			_munitionsActuelles = MaxMunitions;
+			_enRechargement = false;
+			GD.Print($"[RECHARGER] Prêt — {_munitionsActuelles}/{MaxMunitions}");
+		};
 	}
 
 	private void _ChangerEtat(string nouvelEtat)
