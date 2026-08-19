@@ -25,6 +25,8 @@ public partial class Personnage : CharacterBody3D
 	private AnimationNodeStateMachinePlayback _sm;
 	private ColorRect _crosshairH;
 	private ColorRect _crosshairV;
+	private Label _labelMunitions;
+	private Label _labelScore;
 
 	private string _etatCourant = "";
 	private bool _enSaut = false;
@@ -58,6 +60,13 @@ _ybot       = GetNode<Node3D>("ybot");
 		_crosshairV.Visible = false;
 
 		_munitionsActuelles = MaxMunitions;
+
+		_labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
+		_labelScore     = GetNodeOrNull<Label>("HUD/LabelScore");
+		// Cachés au démarrage (mode TPS par défaut)
+		if (_labelMunitions != null) _labelMunitions.Visible = false;
+		if (_labelScore     != null) _labelScore.Visible     = false;
+
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
@@ -181,6 +190,7 @@ _ybot       = GetNode<Node3D>("ybot");
 		}
 
 		_sourisRecaptureeCeFrame = false;
+		_ActualiserHUD();
 
 		Velocity = velocity;
 		MoveAndSlide();
@@ -200,6 +210,8 @@ _ybot       = GetNode<Node3D>("ybot");
 			_ybot.Visible = false;
 			_crosshairH.Visible = true;
 			_crosshairV.Visible = true;
+			if (_labelMunitions != null) _labelMunitions.Visible = true;
+			if (_labelScore     != null) _labelScore.Visible     = true;
 		}
 		else
 		{
@@ -207,6 +219,8 @@ _ybot       = GetNode<Node3D>("ybot");
 			_ybot.Visible = true;
 			_crosshairH.Visible = false;
 			_crosshairV.Visible = false;
+			if (_labelMunitions != null) _labelMunitions.Visible = false;
+			if (_labelScore     != null) _labelScore.Visible     = false;
 		}
 	}
 
@@ -215,6 +229,7 @@ _ybot       = GetNode<Node3D>("ybot");
 	{
 		_munitionsActuelles--;
 		ScoreManager.EnregistrerTir();
+		_ActualiserHUD();
 		GD.Print($"[TIRER] Munitions : {_munitionsActuelles}/{MaxMunitions}");
 
 		var espace = GetWorld3D().DirectSpaceState;
@@ -245,8 +260,20 @@ _ybot       = GetNode<Node3D>("ybot");
 		{
 			_munitionsActuelles = MaxMunitions;
 			_enRechargement = false;
+			_ActualiserHUD();
 			GD.Print($"[RECHARGER] Prêt — {_munitionsActuelles}/{MaxMunitions}");
 		};
+	}
+
+	// Met à jour les labels HUD munitions et score
+	private void _ActualiserHUD()
+	{
+		if (_labelMunitions != null)
+			_labelMunitions.Text = _enRechargement
+				? "RECHARGEMENT..."
+				: $"{_munitionsActuelles}/{MaxMunitions}";
+		if (_labelScore != null)
+			_labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
 	}
 
 	private void _ChangerEtat(string nouvelEtat)
