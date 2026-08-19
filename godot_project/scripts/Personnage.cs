@@ -27,6 +27,7 @@ public partial class Personnage : CharacterBody3D
 	private ColorRect _crosshairV;
 	private Label _labelMunitions;
 	private Label _labelScore;
+	private AudioStreamPlayer3D _sonTir;
 
 	private string _etatCourant = "";
 	private bool _enSaut = false;
@@ -63,6 +64,7 @@ _ybot       = GetNode<Node3D>("ybot");
 
 		_labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
 		_labelScore     = GetNodeOrNull<Label>("HUD/LabelScore");
+		_sonTir         = GetNodeOrNull<AudioStreamPlayer3D>("SonTir");
 		// Cachés au démarrage (mode TPS par défaut)
 		if (_labelMunitions != null) _labelMunitions.Visible = false;
 		if (_labelScore     != null) _labelScore.Visible     = false;
@@ -229,6 +231,7 @@ _ybot       = GetNode<Node3D>("ybot");
 	{
 		_munitionsActuelles--;
 		ScoreManager.EnregistrerTir();
+		_sonTir?.Play();
 		_ActualiserHUD();
 		GD.Print($"[TIRER] Munitions : {_munitionsActuelles}/{MaxMunitions}");
 
