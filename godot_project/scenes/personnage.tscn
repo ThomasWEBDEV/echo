@@ -63,3 +63,31 @@ offset_top = -10.0
 offset_right = 1.0
 offset_bottom = 10.0
 color = Color(1, 1, 1, 0.9)
+
+[node name="LabelMunitions" type="Label" parent="HUD" unique_id=6000000001]
+visible = false
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+grow_vertical = 0
+offset_left = 20.0
+offset_top = -60.0
+offset_right = 220.0
+offset_bottom = -20.0
+text = "30/30"
+
+[node name="LabelScore" type="Label" parent="HUD" unique_id=6000000002]
+visible = false
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+grow_horizontal = 0
+offset_left = -220.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+text = "Cibles : 0"
+
+[node name="SonTir" type="AudioStreamPlayer3D" parent="." unique_id=6000000003]
