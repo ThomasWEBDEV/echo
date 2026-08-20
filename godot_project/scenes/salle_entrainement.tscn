@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://c3xuge2vou8ip" path="res://scenes/personnage.tscn" id="1_perso"]
 [ext_resource type="PackedScene" uid="uid://cible_tscn001" path="res://scenes/cible.tscn" id="2_cible"]
+[ext_resource type="PackedScene" uid="uid://bq1drone00001" path="res://scenes/drone.tscn" id="3_drone"]
+[ext_resource type="Script" uid="uid://dlg1h1c1du2k7" path="res://scripts/SessionStats.cs" id="4_stats"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_mur"]
 albedo_color = Color(0.14, 0.17, 0.21, 1)
@@ -174,3 +176,38 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -12)
 
 [node name="Cible5" parent="Cibles" instance=ExtResource("2_cible")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -12)
+
+[node name="Drones" type="Node3D" parent="."]
+
+[node name="Drone1" parent="Drones" instance=ExtResource("3_drone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1.5, 0)
+PointA = Vector3(-20.0, 1.5, 0.0)
+PointB = Vector3(-8.0, 1.5, 0.0)
+
+[node name="Drone2" parent="Drones" instance=ExtResource("3_drone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 5)
+PointA = Vector3(8.0, 1.5, 5.0)
+PointB = Vector3(22.0, 1.5, 5.0)
+
+[node name="Drone3" parent="Drones" instance=ExtResource("3_drone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
+PointA = Vector3(-6.0, 1.5, -8.0)
+PointB = Vector3(6.0, 1.5, -8.0)
+
+[node name="SessionStats" type="Node" parent="."]
+script = ExtResource("4_stats")
+CheminLabelTimer = NodePath("../HUDSession/LabelSession")
+
+[node name="HUDSession" type="CanvasLayer" parent="."]
+
+[node name="LabelSession" type="Label" parent="HUDSession"]
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+grow_horizontal = 2
+offset_left = -150.0
+offset_top = 14.0
+offset_right = 150.0
+offset_bottom = 50.0
+text = "00:00  |  0 cibles  |  0%"

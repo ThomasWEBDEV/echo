@@ -109,7 +109,7 @@ _ybot       = GetNode<Node3D>("ybot");
 				Input.MouseMode = Input.MouseModeEnum.Visible;
 			// R : rechargement manuel
 			else if (keyEvent.Keycode == Key.R && _modeFPS && !_enRechargement
-			         && _munitionsActuelles < MaxMunitions)
+					 && _munitionsActuelles < MaxMunitions)
 				_Recharger();
 		}
 
@@ -251,6 +251,8 @@ _ybot       = GetNode<Node3D>("ybot");
 		// Appel TakeHit si le collider est une cible
 		if (collider is Cible cible)
 			cible.TakeHit();
+		else if (collider is Drone drone)
+			drone.TakeHit();
 	}
 
 	// Rechargement avec délai (auto ou manuel avec R)
