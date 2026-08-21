@@ -46,7 +46,7 @@ public partial class Personnage : CharacterBody3D
 		_tete       = GetNode<Node3D>("Tete");
 		_cameraTPS  = GetNode<Camera3D>("SpringArm3D/CameraTPS");
 		_cameraFPS  = GetNode<Camera3D>("Tete/CameraFPS");
-_ybot       = GetNode<Node3D>("ybot");
+		_ybot       = GetNode<Node3D>("ybot");
 		_animTree   = GetNode<AnimationTree>("ybot/AnimationTree");
 		_animTree.Active = true;
 		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
@@ -170,11 +170,13 @@ _ybot       = GetNode<Node3D>("ybot");
 				_ChangerEtat("Idle");
 		}
 
-		// Saut
+		// Saut — choisir l'animation selon l'élan (course ou arrêt/marche)
 		if (Input.IsActionJustPressed("sauter") && IsOnFloor())
 		{
+			bool enCourse = _etatCourant == "Running";
 			velocity.Y = ForceSaut;
 			_enSaut = true;
+			_ChangerEtat(enCourse ? "RunningJump" : "Jump");
 		}
 
 		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
