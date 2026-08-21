@@ -140,7 +140,7 @@ _ybot       = GetNode<Node3D>("ybot");
 		camDroite.Y = 0;
 		if (camDroite.LengthSquared() > 0.001f) camDroite = camDroite.Normalized();
 
-		Vector2 inputAxes = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+		Vector2 inputAxes = Input.GetVector("aller_gauche", "aller_droite", "avancer", "reculer");
 		Vector3 direction = camAvant * (-inputAxes.Y) + camDroite * inputAxes.X;
 		if (direction.LengthSquared() > 0.01f)
 			direction = direction.Normalized();
