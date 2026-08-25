@@ -18,12 +18,16 @@ public partial class Drone : CharacterBody3D
 	// Portées de détection du joueur
 	[Export] public float PorteeDetection  = 12f;
 	[Export] public float PorteePerte      = 18f;
+	// Tir sur le joueur en mode poursuite
+	[Export] public float DegatsProjectile = 10f;
+	[Export] public float CadenceTir       = 2.0f;
 
 	private float  _pvActuels;
 	private bool   _detruit     = false;
 	private bool   _versB       = true;
 	private bool   _enPoursuite = false;
 	private Node3D _joueur      = null;
+	private float  _timerTir    = 0f;
 
 	private MeshInstance3D     _mesh;
 	private StandardMaterial3D _materiau;
@@ -63,9 +67,20 @@ public partial class Drone : CharacterBody3D
 		_MettreAJourDetection();
 
 		if (_enPoursuite && _joueur != null)
+		{
 			_Poursuivre();
+			_timerTir += (float)delta;
+			if (_timerTir >= CadenceTir)
+			{
+				_timerTir = 0f;
+				_TirerSurJoueur();
+			}
+		}
 		else
+		{
+			_timerTir = 0f;
 			_Patrouiller();
+		}
 
 		MoveAndSlide();
 	}
@@ -117,6 +132,25 @@ public partial class Drone : CharacterBody3D
 		Vector3 versH = new Vector3(vers.X, 0f, vers.Z);
 		if (versH.LengthSquared() > 0.01f)
 			LookAt(GlobalPosition + versH.Normalized(), Vector3.Up);
+	}
+
+	// Raycast vers le joueur — inflige des dégâts s'il est en ligne de vue
+	private void _TirerSurJoueur()
+	{
+		if (_joueur == null || !GodotObject.IsInstanceValid(_joueur)) return;
+
+		var espace = GetWorld3D().DirectSpaceState;
+		var query  = PhysicsRayQueryParameters3D.Create(GlobalPosition, _joueur.GlobalPosition);
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var result = espace.IntersectRay(query);
+
+		if (result.Count == 0) return;
+
+		if (result["collider"].As<GodotObject>() is Personnage joueur)
+		{
+			GD.Print($"[DRONE] {Name} touche le joueur pour {DegatsProjectile} dégâts !");
+			joueur.TakeHit(DegatsProjectile);
+		}
 	}
 
 	// Appelé par Personnage._Tirer() si le raycast touche ce nœud

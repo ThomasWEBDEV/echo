@@ -15,6 +15,8 @@ public partial class Personnage : CharacterBody3D
 	// Munitions — réglables dans l'inspecteur
 	[Export] public int   MaxMunitions       = 30;
 	[Export] public float TempsRechargement  = 2.0f;
+	// Points de vie du joueur
+	[Export] public float PointsDeVie        = 100f;
 
 	private SpringArm3D _springArm;
 	private Node3D _tete;
@@ -28,7 +30,9 @@ public partial class Personnage : CharacterBody3D
 	private Label _labelMunitions;
 	private Label _labelScore;
 	private AudioStreamPlayer3D _sonTir;
+	private Label _labelSante;
 
+	private float  _pvActuels;
 	private string _etatCourant = "";
 	private bool _enSaut = false;
 	// false = TPS (défaut), true = FPS
@@ -61,10 +65,12 @@ public partial class Personnage : CharacterBody3D
 		_crosshairV.Visible = false;
 
 		AddToGroup("joueur");
+		_pvActuels          = PointsDeVie;
 		_munitionsActuelles = MaxMunitions;
 
 		_labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
 		_labelScore     = GetNodeOrNull<Label>("HUD/LabelScore");
+		_labelSante     = GetNodeOrNull<Label>("HUD/LabelSante");
 		_sonTir         = GetNodeOrNull<AudioStreamPlayer3D>("SonTir");
 		// Cachés au démarrage (mode TPS par défaut)
 		if (_labelMunitions != null) _labelMunitions.Visible = false;
@@ -278,7 +284,23 @@ public partial class Personnage : CharacterBody3D
 		};
 	}
 
-	// Met à jour les labels HUD munitions et score
+	// Appelé par Drone._TirerSurJoueur() quand une balle touche le joueur
+	public void TakeHit(float degats)
+	{
+		_pvActuels = Mathf.Max(0f, _pvActuels - degats);
+		GD.Print($"[JOUEUR] {_pvActuels}/{PointsDeVie} PV restants");
+		_ActualiserHUD();
+		if (_pvActuels <= 0f)
+			_Mourir();
+	}
+
+	private void _Mourir()
+	{
+		GD.Print("[JOUEUR] Game Over — rechargement de la scène...");
+		GetTree().ReloadCurrentScene();
+	}
+
+	// Met à jour les labels HUD munitions, score et santé
 	private void _ActualiserHUD()
 	{
 		if (_labelMunitions != null)
@@ -287,6 +309,8 @@ public partial class Personnage : CharacterBody3D
 				: $"{_munitionsActuelles}/{MaxMunitions}";
 		if (_labelScore != null)
 			_labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
+		if (_labelSante != null)
+			_labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie}";
 	}
 
 	private void _ChangerEtat(string nouvelEtat)
