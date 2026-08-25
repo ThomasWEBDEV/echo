@@ -60,6 +60,7 @@ public partial class Personnage : CharacterBody3D
 		_crosshairH.Visible = false;
 		_crosshairV.Visible = false;
 
+		AddToGroup("joueur");
 		_munitionsActuelles = MaxMunitions;
 
 		_labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
