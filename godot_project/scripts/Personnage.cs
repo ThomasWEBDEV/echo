@@ -237,17 +237,22 @@ public partial class Personnage : CharacterBody3D
 		_ActualiserHUD();
 		GD.Print($"[TIRER] Munitions : {_munitionsActuelles}/{MaxMunitions}");
 
-		var espace = GetWorld3D().DirectSpaceState;
-		var origine = _cameraFPS.GlobalPosition;
+		var espace    = GetWorld3D().DirectSpaceState;
+		var origine   = _cameraFPS.GlobalPosition;
 		var direction = -_cameraFPS.GlobalBasis.Z;
-		var query = PhysicsRayQueryParameters3D.Create(origine, origine + direction * 100f);
+		var query     = PhysicsRayQueryParameters3D.Create(origine, origine + direction * 100f);
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-		var result = espace.IntersectRay(query);
+		var result    = espace.IntersectRay(query);
+
+		// Tracer de tir : point d'impact réel ou extrémité maximale
+		Vector3 impact = result.Count > 0
+			? result["position"].As<Vector3>()
+			: origine + direction * 100f;
+		TraceurTir.Afficher(this, origine, impact);
 
 		if (result.Count == 0) return;
 
 		var collider = result["collider"].As<GodotObject>();
-		Vector3 impact = result["position"].As<Vector3>();
 		GD.Print($"[TIRER] {(collider as Node)?.Name} — impact : {impact}");
 
 		// Appel TakeHit si le collider est une cible
