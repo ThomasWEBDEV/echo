@@ -116,6 +116,7 @@ public partial class Drone : CharacterBody3D
 		if (vers.Length() < 0.15f)
 		{
 			_versB = !_versB;
+			Velocity = Vector3.Zero;
 		}
 		else
 		{
@@ -187,6 +188,7 @@ public partial class Drone : CharacterBody3D
 	private void _Detruire()
 	{
 		_detruit = true;
+		Velocity = Vector3.Zero;
 		ScoreManager.EnregistrerDestruction();
 		GD.Print($"[DRONE] {Name} détruit ! (score : {ScoreManager.CiblesDetruites})");
 
