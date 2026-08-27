@@ -85,27 +85,41 @@ public partial class Drone : CharacterBody3D
 		MoveAndSlide();
 	}
 
-	// Gère les transitions entre patrouille et poursuite selon la distance au joueur
+	// Gère les transitions entre patrouille et poursuite selon la distance et la ligne de vue
 	private void _MettreAJourDetection()
 	{
 		if (_joueur == null || !GodotObject.IsInstanceValid(_joueur)) return;
 
 		float dist = GlobalPosition.DistanceTo(_joueur.GlobalPosition);
 
-		if (!_enPoursuite && dist < PorteeDetection)
+		if (!_enPoursuite && dist < PorteeDetection && _LigneDeVueLibre())
 		{
 			_enPoursuite = true;
 			GD.Print($"[DRONE] {Name} : joueur détecté à {dist:F1}m — passage en poursuite !");
 			if (_materiau != null)
 				_materiau.Emission = EmissionAlerte;
 		}
-		else if (_enPoursuite && dist > PorteePerte)
+		else if (_enPoursuite && (dist > PorteePerte || !_LigneDeVueLibre()))
 		{
 			_enPoursuite = false;
 			GD.Print($"[DRONE] {Name} : joueur perdu — retour en patrouille.");
 			if (_materiau != null)
 				_materiau.Emission = EmissionNormale;
 		}
+	}
+
+	// Vérifie qu'aucun obstacle solide ne bloque la vue entre le drone et le joueur
+	private bool _LigneDeVueLibre()
+	{
+		var espace = GetWorld3D().DirectSpaceState;
+		var query  = PhysicsRayQueryParameters3D.Create(GlobalPosition, _joueur.GlobalPosition);
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var result = espace.IntersectRay(query);
+
+		if (result.Count == 0) return false;
+
+		// La ligne de vue est libre si le premier objet touché est bien le joueur
+		return result["collider"].As<GodotObject>() is Personnage;
 	}
 
 	private void _Patrouiller()
