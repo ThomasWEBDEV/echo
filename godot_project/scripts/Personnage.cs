@@ -349,7 +349,15 @@ public partial class Personnage : CharacterBody3D
 		if (_labelScore != null)
 			_labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
 		if (_labelSante != null)
+		{
 			_labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie}";
+			float ratio = Mathf.Clamp(_pvActuels / PointsDeVie, 0f, 1f);
+			// Vert (plein) → jaune (50%) → rouge (critique)
+			Color couleurSante = ratio > 0.5f
+				? new Color(0.2f, 1f, 0.2f).Lerp(new Color(1f, 1f, 0.1f), (1f - ratio) * 2f)
+				: new Color(1f, 1f, 0.1f).Lerp(new Color(1f, 0.15f, 0.1f), (0.5f - ratio) * 2f);
+			_labelSante.AddThemeColorOverride("font_color", couleurSante);
+		}
 	}
 
 	private void _ChangerEtat(string nouvelEtat)
