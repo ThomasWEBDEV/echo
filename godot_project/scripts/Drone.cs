@@ -21,6 +21,9 @@ public partial class Drone : CharacterBody3D
 	// Tir sur le joueur en mode poursuite
 	[Export] public float DegatsProjectile = 10f;
 	[Export] public float CadenceTir       = 2.0f;
+	// Réapparition automatique après destruction
+	[Export] public bool  AutoRespawn      = true;
+	[Export] public float DelaiRespawn     = 8.0f;
 
 	private float  _pvActuels;
 	private bool   _detruit     = false;
@@ -216,10 +219,53 @@ public partial class Drone : CharacterBody3D
 			_materiau.EmissionEnergyMultiplier  = 0f;
 		}
 
-		GetTree().CreateTimer(DelaiDestruction).Timeout += () =>
+		if (AutoRespawn)
 		{
-			if (IsInstanceValid(this))
-				QueueFree();
-		};
+			GD.Print($"[DRONE] {Name} réapparaît dans {DelaiRespawn}s...");
+			GetTree().CreateTimer(DelaiRespawn).Timeout += _Reinitialiser;
+		}
+		else
+		{
+			GetTree().CreateTimer(DelaiDestruction).Timeout += () =>
+			{
+				if (IsInstanceValid(this))
+					QueueFree();
+			};
+		}
+	}
+
+	// Réinitialise le drone à pleine santé à sa position de départ
+	private void _Reinitialiser()
+	{
+		if (!IsInstanceValid(this)) return;
+
+		_pvActuels   = PointsDeVie;
+		_detruit     = false;
+		_enPoursuite = false;
+		_timerTir    = 0f;
+
+		// Retour au point de départ
+		GlobalPosition = PointA;
+
+		// Réactiver la collision
+		var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+		if (col != null)
+			col.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+
+		// Flash blanc de réapparition, puis retour à la couleur normale
+		if (_materiau != null)
+		{
+			_materiau.AlbedoColor              = new Color(1f, 1f, 1f);
+			_materiau.EmissionEnergyMultiplier  = 2.0f;
+			_materiau.Emission                 = EmissionNormale;
+
+			GetTree().CreateTimer(0.25).Timeout += () =>
+			{
+				if (IsInstanceValid(this) && !_detruit)
+					_AppliquerCouleurVie();
+			};
+		}
+
+		GD.Print($"[DRONE] {Name} réinitialisé à {PointA} !");
 	}
 }
