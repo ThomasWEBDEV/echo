@@ -17,6 +17,10 @@ public partial class Personnage : CharacterBody3D
 	[Export] public float TempsRechargement  = 2.0f;
 	// Points de vie du joueur
 	[Export] public float PointsDeVie        = 100f;
+	// Dash directionnel — réglables dans l'inspecteur
+	[Export] public float ForceDash    = 14.0f;
+	[Export] public float DureeDash    = 0.18f;
+	[Export] public float CooldownDash = 1.5f;
 
 	private SpringArm3D _springArm;
 	private Node3D _tete;
@@ -35,6 +39,11 @@ public partial class Personnage : CharacterBody3D
 	private float  _pvActuels;
 	private string _etatCourant = "";
 	private bool _enSaut = false;
+	// Dash
+	private bool    _enDash              = false;
+	private float   _timerDash           = 0f;
+	private float   _cooldownDashRestant = 0f;
+	private Vector3 _directionDash       = Vector3.Zero;
 	// false = TPS (défaut), true = FPS
 	private bool _modeFPS = false;
 	// Empêche de tirer au frame où on recapture la souris
@@ -175,6 +184,36 @@ public partial class Personnage : CharacterBody3D
 
 			if (IsOnFloor() && !_enSaut)
 				_ChangerEtat("Idle");
+		}
+
+		// Dash — élan bref dans la direction de déplacement (touche E)
+		if (_cooldownDashRestant > 0f)
+			_cooldownDashRestant -= (float)delta;
+
+		if (Input.IsActionJustPressed("dasher") && IsOnFloor() && !_enDash && _cooldownDashRestant <= 0f)
+		{
+			// Dash vers la direction de déplacement courante, ou vers l'avant caméra si immobile
+			if (direction.LengthSquared() > 0.01f)
+				_directionDash = direction;
+			else
+			{
+				Vector3 fwd = new Vector3(-referenceCamera.GlobalBasis.Z.X, 0f, -referenceCamera.GlobalBasis.Z.Z);
+				_directionDash = fwd.LengthSquared() > 0.001f ? fwd.Normalized() : Vector3.Forward;
+			}
+			_enDash    = true;
+			_timerDash = 0f;
+		}
+
+		if (_enDash)
+		{
+			_timerDash += (float)delta;
+			velocity.X  = _directionDash.X * ForceDash;
+			velocity.Z  = _directionDash.Z * ForceDash;
+			if (_timerDash >= DureeDash)
+			{
+				_enDash              = false;
+				_cooldownDashRestant = CooldownDash;
+			}
 		}
 
 		// Saut — choisir l'animation selon l'élan (course ou arrêt/marche)
