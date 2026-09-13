@@ -2,368 +2,353 @@ using Godot;
 
 public partial class Personnage : CharacterBody3D
 {
-	// Vitesses de déplacement — réglables dans l'inspecteur
-	[Export] public float VitesseCourse = 5.5f;
-	[Export] public float VitesseMarche = 2.5f;
-	[Export] public float Gravite = 14.0f;
-	[Export] public float ForceSaut = 5.0f;
-	// Sensibilité de la souris
-	[Export] public float SensibiliteSouris = 0.002f;
-	// Limites verticales de la caméra en degrés
-	[Export] public float PitchMin = -50.0f;
-	[Export] public float PitchMax = 25.0f;
-	// Munitions — réglables dans l'inspecteur
-	[Export] public int   MaxMunitions       = 30;
-	[Export] public float TempsRechargement  = 2.0f;
-	// Points de vie du joueur
-	[Export] public float PointsDeVie        = 100f;
-	// Dash directionnel — réglables dans l'inspecteur
-	[Export] public float ForceDash    = 14.0f;
-	[Export] public float DureeDash    = 0.18f;
-	[Export] public float CooldownDash = 1.5f;
+        [Export] public float VitesseCourse = 5.5f;
+        [Export] public float VitesseMarche = 2.5f;
+        [Export] public float Gravite = 14.0f;
+        [Export] public float ForceSaut = 5.0f;
+        [Export] public float SensibiliteSouris = 0.002f;
+        [Export] public float PitchMin = -50.0f;
+        [Export] public float PitchMax = 25.0f;
+        [Export] public int   MaxMunitions       = 30;
+        [Export] public float TempsRechargement  = 2.0f;
+        [Export] public float PointsDeVie        = 100f;
+        [Export] public float ForceDash    = 14.0f;
+        [Export] public float DureeDash    = 0.18f;
+        [Export] public float CooldownDash = 1.5f;
 
-	private SpringArm3D _springArm;
-	private Node3D _tete;
-	private Camera3D _cameraTPS;
-	private Camera3D _cameraFPS;
-	private Node3D _ybot;
-	private AnimationTree _animTree;
-	private AnimationNodeStateMachinePlayback _sm;
-	private ColorRect _crosshairH;
-	private ColorRect _crosshairV;
-	private Label _labelMunitions;
-	private Label _labelScore;
-	private AudioStreamPlayer3D _sonTir;
-	private Label _labelSante;
+        private SpringArm3D _springArm;
+        private Node3D _tete;
+        private Camera3D _cameraTPS;
+        private Camera3D _cameraFPS;
+        private Node3D _ybot;
+        private AnimationTree _animTree;
+        private AnimationNodeStateMachinePlayback _sm;
+        private ColorRect _crosshairH;
+        private ColorRect _crosshairV;
+        private Label _labelMunitions;
+        private Label _labelScore;
+        private AudioStreamPlayer3D _sonTir;
+        private Label _labelSante;
 
-	private float  _pvActuels;
-	private string _etatCourant = "";
-	private bool _enSaut = false;
-	// Dash
-	private bool    _enDash              = false;
-	private float   _timerDash           = 0f;
-	private float   _cooldownDashRestant = 0f;
-	private Vector3 _directionDash       = Vector3.Zero;
-	// false = TPS (défaut), true = FPS
-	private bool _modeFPS = false;
-	// Empêche de tirer au frame où on recapture la souris
-	private bool _sourisRecaptureeCeFrame = false;
+        private float  _pvActuels;
+        private string _etatCourant = "";
+        private bool _enSaut = false;
+        private bool _etaitEnAir = false; // pour détecter l'atterrissage
+        private bool _enLanding = false;
+        private float _timerLanding = 0f;
+        private const float DUREE_LANDING = 0.4f;
 
-	// Munitions
-	private int  _munitionsActuelles;
-	private bool _enRechargement = false;
+        private bool    _enDash              = false;
+        private float   _timerDash           = 0f;
+        private float   _cooldownDashRestant = 0f;
+        private Vector3 _directionDash       = Vector3.Zero;
+        private bool _modeFPS = false;
+        private bool _sourisRecaptureeCeFrame = false;
+        private int  _munitionsActuelles;
+        private bool _enRechargement = false;
 
-	public override void _Ready()
-	{
-		_springArm  = GetNode<SpringArm3D>("SpringArm3D");
-		_tete       = GetNode<Node3D>("Tete");
-		_cameraTPS  = GetNode<Camera3D>("SpringArm3D/CameraTPS");
-		_cameraFPS  = GetNode<Camera3D>("Tete/CameraFPS");
-		_ybot       = GetNode<Node3D>("ybot");
-		_animTree   = GetNode<AnimationTree>("ybot/AnimationTree");
-		_animTree.Active = true;
-		_sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
-		_ChangerEtat("Idle");
+        public override void _Ready()
+        {
+                _springArm  = GetNode<SpringArm3D>("SpringArm3D");
+                _tete       = GetNode<Node3D>("Tete");
+                _cameraTPS  = GetNode<Camera3D>("SpringArm3D/CameraTPS");
+                _cameraFPS  = GetNode<Camera3D>("Tete/CameraFPS");
+                _ybot       = GetNode<Node3D>("ybot");
+                _animTree   = GetNode<AnimationTree>("ybot/AnimationTree");
+                _animTree.Active = true;
+                _sm = (AnimationNodeStateMachinePlayback)_animTree.Get("parameters/playback");
+                _ChangerEtat("Idle");
 
-		_crosshairH = GetNode<ColorRect>("HUD/CrosshairH");
-		_crosshairV = GetNode<ColorRect>("HUD/CrosshairV");
+                _crosshairH = GetNode<ColorRect>("HUD/CrosshairH");
+                _crosshairV = GetNode<ColorRect>("HUD/CrosshairV");
 
-		// TPS par défaut : caméra TPS active, ybot visible, viseur caché
-		_cameraTPS.MakeCurrent();
-		_crosshairH.Visible = false;
-		_crosshairV.Visible = false;
+                _cameraTPS.MakeCurrent();
+                _crosshairH.Visible = false;
+                _crosshairV.Visible = false;
 
-		AddToGroup("joueur");
-		_pvActuels          = PointsDeVie;
-		_munitionsActuelles = MaxMunitions;
+                AddToGroup("joueur");
+                _pvActuels          = PointsDeVie;
+                _munitionsActuelles = MaxMunitions;
 
-		_labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
-		_labelScore     = GetNodeOrNull<Label>("HUD/LabelScore");
-		_labelSante     = GetNodeOrNull<Label>("HUD/LabelSante");
-		_sonTir         = GetNodeOrNull<AudioStreamPlayer3D>("SonTir");
-		// Cachés au démarrage (mode TPS par défaut)
-		if (_labelMunitions != null) _labelMunitions.Visible = false;
-		if (_labelScore     != null) _labelScore.Visible     = false;
+                _labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
+                _labelScore     = GetNodeOrNull<Label>("HUD/LabelScore");
+                _labelSante     = GetNodeOrNull<Label>("HUD/LabelSante");
+                _sonTir         = GetNodeOrNull<AudioStreamPlayer3D>("SonTir");
+                if (_labelMunitions != null) _labelMunitions.Visible = false;
+                if (_labelScore     != null) _labelScore.Visible     = false;
 
-		Input.MouseMode = Input.MouseModeEnum.Captured;
-	}
+                Input.MouseMode = Input.MouseModeEnum.Captured;
+        }
 
-	public override void _Input(InputEvent @event)
-	{
-		// Rotation caméra à la souris
-		if (@event is InputEventMouseMotion mouseMotion && Input.MouseMode == Input.MouseModeEnum.Captured)
-		{
-			if (_modeFPS)
-			{
-				// FPS : la tête tourne en Y, la caméra FPS pitch en X
-				_tete.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
-				float pitch = Mathf.Clamp(
-					_cameraFPS.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
-					PitchMin, PitchMax
-				);
-				_cameraFPS.RotationDegrees = new Vector3(pitch, 0, 0);
-			}
-			else
-			{
-				// TPS : le SpringArm3D tourne
-				_springArm.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
-				float pitch = Mathf.Clamp(
-					_springArm.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
-					PitchMin, PitchMax
-				);
-				_springArm.RotationDegrees = new Vector3(pitch, _springArm.RotationDegrees.Y, 0);
-			}
-		}
+        public override void _Input(InputEvent @event)
+        {
+                if (@event is InputEventMouseMotion mouseMotion && Input.MouseMode == Input.MouseModeEnum.Captured)
+                {
+                        if (_modeFPS)
+                        {
+                                _tete.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+                                float pitch = Mathf.Clamp(
+                                        _cameraFPS.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
+                                        PitchMin, PitchMax
+                                );
+                                _cameraFPS.RotationDegrees = new Vector3(pitch, 0, 0);
+                        }
+                        else
+                        {
+                                _springArm.RotateY(-mouseMotion.Relative.X * SensibiliteSouris);
+                                float pitch = Mathf.Clamp(
+                                        _springArm.RotationDegrees.X - mouseMotion.Relative.Y * Mathf.RadToDeg(SensibiliteSouris),
+                                        PitchMin, PitchMax
+                                );
+                                _springArm.RotationDegrees = new Vector3(pitch, _springArm.RotationDegrees.Y, 0);
+                        }
+                }
 
-		if (@event is InputEventKey keyEvent && keyEvent.Pressed)
-		{
-			// F : basculer entre TPS et FPS
-			if (keyEvent.Keycode == Key.F)
-				_BasculerMode();
-			// Échap : libérer la souris
-			else if (keyEvent.Keycode == Key.Escape)
-				Input.MouseMode = Input.MouseModeEnum.Visible;
-			// R : rechargement manuel
-			else if (keyEvent.Keycode == Key.R && _modeFPS && !_enRechargement
-					 && _munitionsActuelles < MaxMunitions)
-				_Recharger();
-		}
+                if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+                {
+                        if (keyEvent.Keycode == Key.F)
+                                _BasculerMode();
+                        else if (keyEvent.Keycode == Key.Escape)
+                                Input.MouseMode = Input.MouseModeEnum.Visible;
+                        else if (keyEvent.Keycode == Key.R && _modeFPS && !_enRechargement
+                                         && _munitionsActuelles < MaxMunitions)
+                                _Recharger();
+                }
 
-		// Clic gauche sur fond visible : recapturer sans déclencher un tir
-		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed
-			&& mouseBtn.ButtonIndex == MouseButton.Left
-			&& Input.MouseMode == Input.MouseModeEnum.Visible)
-		{
-			Input.MouseMode = Input.MouseModeEnum.Captured;
-			_sourisRecaptureeCeFrame = true;
-		}
-	}
+                if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed
+                        && mouseBtn.ButtonIndex == MouseButton.Left
+                        && Input.MouseMode == Input.MouseModeEnum.Visible)
+                {
+                        Input.MouseMode = Input.MouseModeEnum.Captured;
+                        _sourisRecaptureeCeFrame = true;
+                }
+        }
 
-	public override void _PhysicsProcess(double delta)
-	{
-		Vector3 velocity = Velocity;
+        public override void _PhysicsProcess(double delta)
+        {
+                Vector3 velocity = Velocity;
+                bool surSol = IsOnFloor();
 
-		if (!IsOnFloor())
-			velocity.Y -= Gravite * (float)delta;
+                if (!surSol)
+                        velocity.Y -= Gravite * (float)delta;
 
-		// Axes de déplacement selon le mode actif
-		Node3D referenceCamera = _modeFPS ? _tete : _springArm;
-		Vector3 camAvant = -referenceCamera.GlobalBasis.Z;
-		camAvant.Y = 0;
-		if (camAvant.LengthSquared() > 0.001f) camAvant = camAvant.Normalized();
+                // Détection atterrissage
+                if (_etaitEnAir && surSol)
+                {
+                        _enLanding = true;
+                        _timerLanding = 0f;
+                        _enSaut = false;
+                        _ChangerEtat("Landing");
+                }
+                _etaitEnAir = !surSol;
 
-		Vector3 camDroite = referenceCamera.GlobalBasis.X;
-		camDroite.Y = 0;
-		if (camDroite.LengthSquared() > 0.001f) camDroite = camDroite.Normalized();
+                // Timer landing
+                if (_enLanding)
+                {
+                        _timerLanding += (float)delta;
+                        if (_timerLanding >= DUREE_LANDING)
+                                _enLanding = false;
+                }
 
-		Vector2 inputAxes = Input.GetVector("aller_gauche", "aller_droite", "avancer", "reculer");
-		Vector3 direction = camAvant * (-inputAxes.Y) + camDroite * inputAxes.X;
-		if (direction.LengthSquared() > 0.01f)
-			direction = direction.Normalized();
+                Node3D referenceCamera = _modeFPS ? _tete : _springArm;
+                Vector3 camAvant = -referenceCamera.GlobalBasis.Z;
+                camAvant.Y = 0;
+                if (camAvant.LengthSquared() > 0.001f) camAvant = camAvant.Normalized();
 
-		// Shift = marche lente, défaut = course
-		bool marcher = Input.IsPhysicalKeyPressed(Key.Shift);
-		float vitesse = marcher ? VitesseMarche : VitesseCourse;
+                Vector3 camDroite = referenceCamera.GlobalBasis.X;
+                camDroite.Y = 0;
+                if (camDroite.LengthSquared() > 0.001f) camDroite = camDroite.Normalized();
 
-		if (direction.LengthSquared() > 0.01f)
-		{
-			velocity.X = direction.X * vitesse;
-			velocity.Z = direction.Z * vitesse;
+                Vector2 inputAxes = Input.GetVector("aller_gauche", "aller_droite", "avancer", "reculer");
+                Vector3 direction = camAvant * (-inputAxes.Y) + camDroite * inputAxes.X;
+                if (direction.LengthSquared() > 0.01f)
+                        direction = direction.Normalized();
 
-			if (IsOnFloor() && !_enSaut)
-				_ChangerEtat(marcher ? "Walking" : "Running");
+                bool marcher = Input.IsPhysicalKeyPressed(Key.Shift);
+                float vitesse = marcher ? VitesseMarche : VitesseCourse;
 
-			// Rotation du mesh vers la direction de déplacement
-			Vector3 cible = _ybot.GlobalPosition - new Vector3(direction.X, 0, direction.Z);
-			_ybot.LookAt(cible, Vector3.Up);
-		}
-		else
-		{
-			velocity.X = 0;
-			velocity.Z = 0;
+                if (direction.LengthSquared() > 0.01f)
+                {
+                        velocity.X = direction.X * vitesse;
+                        velocity.Z = direction.Z * vitesse;
 
-			if (IsOnFloor() && !_enSaut)
-				_ChangerEtat("Idle");
-		}
+                        if (surSol && !_enSaut && !_enLanding)
+                                _ChangerEtat(marcher ? "Walking" : "Running");
 
-		// Dash — élan bref dans la direction de déplacement (touche E)
-		if (_cooldownDashRestant > 0f)
-			_cooldownDashRestant -= (float)delta;
+                        Vector3 cible = _ybot.GlobalPosition - new Vector3(direction.X, 0, direction.Z);
+                        _ybot.LookAt(cible, Vector3.Up);
+                }
+                else
+                {
+                        velocity.X = 0;
+                        velocity.Z = 0;
 
-		if (Input.IsActionJustPressed("dasher") && IsOnFloor() && !_enDash && _cooldownDashRestant <= 0f)
-		{
-			// Dash vers la direction de déplacement courante, ou vers l'avant caméra si immobile
-			if (direction.LengthSquared() > 0.01f)
-				_directionDash = direction;
-			else
-			{
-				Vector3 fwd = new Vector3(-referenceCamera.GlobalBasis.Z.X, 0f, -referenceCamera.GlobalBasis.Z.Z);
-				_directionDash = fwd.LengthSquared() > 0.001f ? fwd.Normalized() : Vector3.Forward;
-			}
-			_enDash    = true;
-			_timerDash = 0f;
-		}
+                        if (surSol && !_enSaut && !_enLanding)
+                                _ChangerEtat("Idle");
+                }
 
-		if (_enDash)
-		{
-			_timerDash += (float)delta;
-			velocity.X  = _directionDash.X * ForceDash;
-			velocity.Z  = _directionDash.Z * ForceDash;
-			if (_timerDash >= DureeDash)
-			{
-				_enDash              = false;
-				_cooldownDashRestant = CooldownDash;
-			}
-		}
+                // Animation en l'air
+                if (!surSol && _enSaut)
+                        _ChangerEtat("FallingIdle");
 
-		// Saut — choisir l'animation selon l'élan (course ou arrêt/marche)
-		if (Input.IsActionJustPressed("sauter") && IsOnFloor())
-		{
-			bool enCourse = _etatCourant == "Running";
-			velocity.Y = ForceSaut;
-			_enSaut = true;
-			_ChangerEtat(enCourse ? "RunningJump" : "Jump");
-		}
+                // Dash
+                if (_cooldownDashRestant > 0f)
+                        _cooldownDashRestant -= (float)delta;
 
-		if (_enSaut && IsOnFloor() && velocity.Y <= 0)
-			_enSaut = false;
+                if (Input.IsActionJustPressed("dasher") && surSol && !_enDash && _cooldownDashRestant <= 0f)
+                {
+                        if (direction.LengthSquared() > 0.01f)
+                                _directionDash = direction;
+                        else
+                        {
+                                Vector3 fwd = new Vector3(-referenceCamera.GlobalBasis.Z.X, 0f, -referenceCamera.GlobalBasis.Z.Z);
+                                _directionDash = fwd.LengthSquared() > 0.001f ? fwd.Normalized() : Vector3.Forward;
+                        }
+                        _enDash    = true;
+                        _timerDash = 0f;
+                }
 
-		// Tir : seulement en mode FPS, avec munitions disponibles
-		if (_modeFPS && Input.IsActionJustPressed("tirer")
-			&& Input.MouseMode == Input.MouseModeEnum.Captured
-			&& !_sourisRecaptureeCeFrame)
-		{
-			if (_munitionsActuelles > 0 && !_enRechargement)
-				_Tirer();
-			else if (!_enRechargement)
-				_Recharger(); // rechargement auto si à court
-		}
+                if (_enDash)
+                {
+                        _timerDash += (float)delta;
+                        velocity.X  = _directionDash.X * ForceDash;
+                        velocity.Z  = _directionDash.Z * ForceDash;
+                        if (_timerDash >= DureeDash)
+                        {
+                                _enDash              = false;
+                                _cooldownDashRestant = CooldownDash;
+                        }
+                }
 
-		_sourisRecaptureeCeFrame = false;
-		_ActualiserHUD();
+                // Saut
+                if (Input.IsActionJustPressed("sauter") && surSol && !_enLanding)
+                {
+                        bool enCourse = _etatCourant == "Running";
+                        velocity.Y = ForceSaut;
+                        _enSaut = true;
+                        _ChangerEtat(enCourse ? "RunningJump" : "Jump");
+                }
 
-		Velocity = velocity;
-		MoveAndSlide();
-	}
+                // Tir
+                if (_modeFPS && Input.IsActionJustPressed("tirer")
+                        && Input.MouseMode == Input.MouseModeEnum.Captured
+                        && !_sourisRecaptureeCeFrame)
+                {
+                        if (_munitionsActuelles > 0 && !_enRechargement)
+                                _Tirer();
+                        else if (!_enRechargement)
+                                _Recharger();
+                }
 
-	// Bascule entre le mode TPS et le mode FPS
-	private void _BasculerMode()
-	{
-		_modeFPS = !_modeFPS;
+                _sourisRecaptureeCeFrame = false;
+                _ActualiserHUD();
 
-		if (_modeFPS)
-		{
-			// Aligner la tête sur la rotation du SpringArm pour éviter un saut de caméra
-			_tete.GlobalRotation = new Vector3(0, _springArm.GlobalRotation.Y, 0);
-			_cameraFPS.RotationDegrees = new Vector3(_springArm.RotationDegrees.X, 0, 0);
-			_cameraFPS.MakeCurrent();
-			_ybot.Visible = false;
-			_crosshairH.Visible = true;
-			_crosshairV.Visible = true;
-			if (_labelMunitions != null) _labelMunitions.Visible = true;
-			if (_labelScore     != null) _labelScore.Visible     = true;
-		}
-		else
-		{
-			_cameraTPS.MakeCurrent();
-			_ybot.Visible = true;
-			_crosshairH.Visible = false;
-			_crosshairV.Visible = false;
-			if (_labelMunitions != null) _labelMunitions.Visible = false;
-			if (_labelScore     != null) _labelScore.Visible     = false;
-		}
-	}
+                Velocity = velocity;
+                MoveAndSlide();
+        }
 
-	// Détecte l'impact via raycast physique (sans nœud RayCast3D pour éviter tout rendu)
-	private void _Tirer()
-	{
-		_munitionsActuelles--;
-		ScoreManager.EnregistrerTir();
-		_sonTir?.Play();
-		_ActualiserHUD();
-		GD.Print($"[TIRER] Munitions : {_munitionsActuelles}/{MaxMunitions}");
+        private void _BasculerMode()
+        {
+                _modeFPS = !_modeFPS;
 
-		var espace    = GetWorld3D().DirectSpaceState;
-		var origine   = _cameraFPS.GlobalPosition;
-		var direction = -_cameraFPS.GlobalBasis.Z;
-		var query     = PhysicsRayQueryParameters3D.Create(origine, origine + direction * 100f);
-		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-		var result    = espace.IntersectRay(query);
+                if (_modeFPS)
+                {
+                        _tete.GlobalRotation = new Vector3(0, _springArm.GlobalRotation.Y, 0);
+                        _cameraFPS.RotationDegrees = new Vector3(_springArm.RotationDegrees.X, 0, 0);
+                        _cameraFPS.MakeCurrent();
+                        _ybot.Visible = false;
+                        _crosshairH.Visible = true;
+                        _crosshairV.Visible = true;
+                        if (_labelMunitions != null) _labelMunitions.Visible = true;
+                        if (_labelScore     != null) _labelScore.Visible     = true;
+                }
+                else
+                {
+                        _cameraTPS.MakeCurrent();
+                        _ybot.Visible = true;
+                        _crosshairH.Visible = false;
+                        _crosshairV.Visible = false;
+                        if (_labelMunitions != null) _labelMunitions.Visible = false;
+                        if (_labelScore     != null) _labelScore.Visible     = false;
+                }
+        }
 
-		// Tracer de tir : point d'impact réel ou extrémité maximale
-		Vector3 impact = result.Count > 0
-			? result["position"].As<Vector3>()
-			: origine + direction * 100f;
-		TraceurTir.Afficher(this, origine, impact);
+        private void _Tirer()
+        {
+                _munitionsActuelles--;
+                ScoreManager.EnregistrerTir();
+                _sonTir?.Play();
+                _ActualiserHUD();
 
-		if (result.Count == 0) return;
+                var espace    = GetWorld3D().DirectSpaceState;
+                var origine   = _cameraFPS.GlobalPosition;
+                var direction = -_cameraFPS.GlobalBasis.Z;
+                var query     = PhysicsRayQueryParameters3D.Create(origine, origine + direction * 100f);
+                query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+                var result    = espace.IntersectRay(query);
 
-		var collider = result["collider"].As<GodotObject>();
-		GD.Print($"[TIRER] {(collider as Node)?.Name} — impact : {impact}");
+                Vector3 impact = result.Count > 0
+                        ? result["position"].As<Vector3>()
+                        : origine + direction * 100f;
+                TraceurTir.Afficher(this, origine, impact);
 
-		// Appel TakeHit si le collider est une cible
-		if (collider is Cible cible)
-			cible.TakeHit();
-		else if (collider is Drone drone)
-			drone.TakeHit();
-	}
+                if (result.Count == 0) return;
 
-	// Rechargement avec délai (auto ou manuel avec R)
-	private void _Recharger()
-	{
-		_enRechargement = true;
-		GD.Print($"[RECHARGER] Rechargement en cours ({TempsRechargement}s)...");
+                var collider = result["collider"].As<GodotObject>();
 
-		GetTree().CreateTimer(TempsRechargement).Timeout += () =>
-		{
-			_munitionsActuelles = MaxMunitions;
-			_enRechargement = false;
-			_ActualiserHUD();
-			GD.Print($"[RECHARGER] Prêt — {_munitionsActuelles}/{MaxMunitions}");
-		};
-	}
+                if (collider is Cible cible)
+                        cible.TakeHit();
+                else if (collider is Drone drone)
+                        drone.TakeHit();
+        }
 
-	// Appelé par Drone._TirerSurJoueur() quand une balle touche le joueur
-	public void TakeHit(float degats)
-	{
-		_pvActuels = Mathf.Max(0f, _pvActuels - degats);
-		GD.Print($"[JOUEUR] {_pvActuels}/{PointsDeVie} PV restants");
-		_ActualiserHUD();
-		if (_pvActuels <= 0f)
-			_Mourir();
-	}
+        private void _Recharger()
+        {
+                _enRechargement = true;
+                GetTree().CreateTimer(TempsRechargement).Timeout += () =>
+                {
+                        _munitionsActuelles = MaxMunitions;
+                        _enRechargement = false;
+                        _ActualiserHUD();
+                };
+        }
 
-	private void _Mourir()
-	{
-		GD.Print("[JOUEUR] Game Over — rechargement de la scène...");
-		GetTree().ReloadCurrentScene();
-	}
+        public void TakeHit(float degats)
+        {
+                _pvActuels = Mathf.Max(0f, _pvActuels - degats);
+                _ActualiserHUD();
+                if (_pvActuels <= 0f)
+                        _Mourir();
+        }
 
-	// Met à jour les labels HUD munitions, score et santé
-	private void _ActualiserHUD()
-	{
-		if (_labelMunitions != null)
-			_labelMunitions.Text = _enRechargement
-				? "RECHARGEMENT..."
-				: $"{_munitionsActuelles}/{MaxMunitions}";
-		if (_labelScore != null)
-			_labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
-		if (_labelSante != null)
-		{
-			_labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie}";
-			float ratio = Mathf.Clamp(_pvActuels / PointsDeVie, 0f, 1f);
-			// Vert (plein) → jaune (50%) → rouge (critique)
-			Color couleurSante = ratio > 0.5f
-				? new Color(0.2f, 1f, 0.2f).Lerp(new Color(1f, 1f, 0.1f), (1f - ratio) * 2f)
-				: new Color(1f, 1f, 0.1f).Lerp(new Color(1f, 0.15f, 0.1f), (0.5f - ratio) * 2f);
-			_labelSante.AddThemeColorOverride("font_color", couleurSante);
-		}
-	}
+        private void _Mourir()
+        {
+                GetTree().ReloadCurrentScene();
+        }
 
-	private void _ChangerEtat(string nouvelEtat)
-	{
-		if (_etatCourant == nouvelEtat) return;
-		_etatCourant = nouvelEtat;
-		_sm.Travel(nouvelEtat);
-	}
+        private void _ActualiserHUD()
+        {
+                if (_labelMunitions != null)
+                        _labelMunitions.Text = _enRechargement
+                                ? "RECHARGEMENT..."
+                                : $"{_munitionsActuelles}/{MaxMunitions}";
+                if (_labelScore != null)
+                        _labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
+                if (_labelSante != null)
+                {
+                        _labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie}";
+                        float ratio = Mathf.Clamp(_pvActuels / PointsDeVie, 0f, 1f);
+                        Color couleurSante = ratio > 0.5f
+                                ? new Color(0.2f, 1f, 0.2f).Lerp(new Color(1f, 1f, 0.1f), (1f - ratio) * 2f)
+                                : new Color(1f, 1f, 0.1f).Lerp(new Color(1f, 0.15f, 0.1f), (0.5f - ratio) * 2f);
+                        _labelSante.AddThemeColorOverride("font_color", couleurSante);
+                }
+        }
+
+        private void _ChangerEtat(string nouvelEtat)
+        {
+                if (_etatCourant == nouvelEtat) return;
+                _etatCourant = nouvelEtat;
+                _sm.Travel(nouvelEtat);
+        }
 }
