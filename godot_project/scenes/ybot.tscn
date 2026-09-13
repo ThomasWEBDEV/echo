@@ -17,6 +17,12 @@ animation = &"RunningJump"
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_kqo6s"]
 animation = &"Walking"
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_falling"]
+animation = &"FallingIdle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_landing"]
+animation = &"Landing"
+
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hvqei"]
 xfade_time = 0.2
 
@@ -61,6 +67,18 @@ xfade_time = 0.1
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_nhreo"]
 xfade_time = 0.1
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_fall1"]
+xfade_time = 0.2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_fall2"]
+xfade_time = 0.2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_land1"]
+xfade_time = 0.2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_land2"]
+xfade_time = 0.2
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_kwg40"]
 states/End/position = Vector2(800, 171)
 states/Idle/node = SubResource("AnimationNodeAnimation_kwg40")
@@ -74,7 +92,11 @@ states/RunningJump/position = Vector2(631.46906, 191)
 states/Start/position = Vector2(134, 67)
 states/Walking/node = SubResource("AnimationNodeAnimation_kqo6s")
 states/Walking/position = Vector2(299, 115)
-transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_hvqei"), "Idle", "Walking", SubResource("AnimationNodeStateMachineTransition_pp3rd"), "Walking", "Idle", SubResource("AnimationNodeStateMachineTransition_ghidq"), "Walking", "Running", SubResource("AnimationNodeStateMachineTransition_vbbj6"), "Running", "Walking", SubResource("AnimationNodeStateMachineTransition_gpadb"), "Idle", "Jump", SubResource("AnimationNodeStateMachineTransition_gqa8n"), "Jump", "Idle", SubResource("AnimationNodeStateMachineTransition_yoycq"), "Walking", "Jump", SubResource("AnimationNodeStateMachineTransition_kwg40"), "Running", "Jump", SubResource("AnimationNodeStateMachineTransition_plr2k"), "Jump", "Walking", SubResource("AnimationNodeStateMachineTransition_kqo6s"), "Jump", "Running", SubResource("AnimationNodeStateMachineTransition_jffuq"), "Running", "RunningJump", SubResource("AnimationNodeStateMachineTransition_i3873"), "RunningJump", "Idle", SubResource("AnimationNodeStateMachineTransition_4d0ay"), "RunningJump", "Walking", SubResource("AnimationNodeStateMachineTransition_jbtfl"), "RunningJump", "Running", SubResource("AnimationNodeStateMachineTransition_nhreo")]
+states/FallingIdle/node = SubResource("AnimationNodeAnimation_falling")
+states/FallingIdle/position = Vector2(870, 67)
+states/Landing/node = SubResource("AnimationNodeAnimation_landing")
+states/Landing/position = Vector2(870, 171)
+transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_hvqei"), "Idle", "Walking", SubResource("AnimationNodeStateMachineTransition_pp3rd"), "Walking", "Idle", SubResource("AnimationNodeStateMachineTransition_ghidq"), "Walking", "Running", SubResource("AnimationNodeStateMachineTransition_vbbj6"), "Running", "Walking", SubResource("AnimationNodeStateMachineTransition_gpadb"), "Idle", "Jump", SubResource("AnimationNodeStateMachineTransition_gqa8n"), "Jump", "Idle", SubResource("AnimationNodeStateMachineTransition_yoycq"), "Walking", "Jump", SubResource("AnimationNodeStateMachineTransition_kwg40"), "Running", "Jump", SubResource("AnimationNodeStateMachineTransition_plr2k"), "Jump", "Walking", SubResource("AnimationNodeStateMachineTransition_kqo6s"), "Jump", "Running", SubResource("AnimationNodeStateMachineTransition_jffuq"), "Running", "RunningJump", SubResource("AnimationNodeStateMachineTransition_i3873"), "RunningJump", "Idle", SubResource("AnimationNodeStateMachineTransition_4d0ay"), "RunningJump", "Walking", SubResource("AnimationNodeStateMachineTransition_jbtfl"), "RunningJump", "Running", SubResource("AnimationNodeStateMachineTransition_nhreo"), "Jump", "FallingIdle", SubResource("AnimationNodeStateMachineTransition_fall1"), "FallingIdle", "Landing", SubResource("AnimationNodeStateMachineTransition_fall2"), "Landing", "Idle", SubResource("AnimationNodeStateMachineTransition_land1"), "Landing", "Running", SubResource("AnimationNodeStateMachineTransition_land2")]
 graph_offset = Vector2(58.469048, 0)
 
 [node name="ybot" unique_id=1480278627 instance=ExtResource("1_kwg40")]
