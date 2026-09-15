@@ -368,3 +368,6 @@ private bool _isExhausted = false;
 // [AJOUT AUTOMATIQUE COMMIT 3]
 [Export] private NodePath staminaLabelPath;
 private Label _staminaLabel;
+
+// [AJOUT AUTOMATIQUE COMMIT 4]
+// Sécurité des limites de stamina
