@@ -364,3 +364,7 @@ private bool _isExhausted = false;
 // [AJOUT AUTOMATIQUE COMMIT 2]
 // Gestion de la vitesse et de l'épuisement
 // (À intégrer dans votre boucle _PhysicsProcess)
+
+// [AJOUT AUTOMATIQUE COMMIT 3]
+[Export] private NodePath staminaLabelPath;
+private Label _staminaLabel;
