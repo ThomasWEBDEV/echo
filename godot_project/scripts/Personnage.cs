@@ -352,22 +352,3 @@ public partial class Personnage : CharacterBody3D
                 _sm.Travel(nouvelEtat);
         }
 }
-
-// [AJOUT AUTOMATIQUE COMMIT 1]
-// Variables et logique de stamina
-[Export] public float MaxStamina { get; set; } = 100.0f;
-[Export] public float StaminaDrainRate { get; set; } = 30.0f;
-[Export] public float StaminaRegenRate { get; set; } = 20.0f;
-private float _currentStamina;
-private bool _isExhausted = false;
-
-// [AJOUT AUTOMATIQUE COMMIT 2]
-// Gestion de la vitesse et de l'épuisement
-// (À intégrer dans votre boucle _PhysicsProcess)
-
-// [AJOUT AUTOMATIQUE COMMIT 3]
-[Export] private NodePath staminaLabelPath;
-private Label _staminaLabel;
-
-// [AJOUT AUTOMATIQUE COMMIT 4]
-// Sécurité des limites de stamina
