@@ -1,25 +1,53 @@
+using Godot;
+using System;
+using System.Threading;
+
 /// <summary>
-/// Stats de session d'entraînement — classe statique accessible depuis n'importe quel script.
-/// Suivre les tirs tirés, les cibles détruites et le temps écoulé.
+/// Gestionnaire de statistiques de session (Thread-safe et événementiel).
 /// </summary>
 public static class ScoreManager
 {
-	public static int   CiblesDetruites { get; private set; } = 0;
-	public static int   TirsTires       { get; private set; } = 0;
-	public static float TempsSession    { get; private set; } = 0f;
+    private static int _ciblesDetruites;
+    private static int _tirsTires;
 
-	// Précision en pourcentage (0 si aucun tir effectué)
-	public static float Precision =>
-		TirsTires > 0 ? (float)CiblesDetruites / TirsTires * 100f : 0f;
+    public static int CiblesDetruites => _ciblesDetruites;
+    public static int TirsTires => _tirsTires;
+    public static float TempsSession { get; private set; }
 
-	public static void EnregistrerTir()         => TirsTires++;
-	public static void EnregistrerDestruction() => CiblesDetruites++;
-	public static void AjouterTemps(float dt)   => TempsSession += dt;
+    /// <summary>
+    /// Précision en pourcentage (0–100%).
+    /// </summary>
+    public static float Precision => 
+        _tirsTires > 0 ? (float)_ciblesDetruites / _tirsTires * 100f : 0f;
 
-	public static void Reinitialiser()
-	{
-		CiblesDetruites = 0;
-		TirsTires       = 0;
-		TempsSession    = 0f;
-	}
+    // Événements pour mettre à jour l'UI de manière réactive
+    public static event Action<int, float> OnScoreUpdated; // (cibles, précision)
+    public static event Action OnStatsReset;
+
+    public static void EnregistrerTir()
+    {
+        Interlocked.Increment(ref _tirsTires);
+        OnScoreUpdated?.Invoke(_ciblesDetruites, Precision);
+    }
+
+    public static void EnregistrerDestruction()
+    {
+        Interlocked.Increment(ref _ciblesDetruites);
+        OnScoreUpdated?.Invoke(_ciblesDetruites, Precision);
+    }
+
+    public static void AjouterTemps(double delta)
+    {
+        TempsSession += (float)delta;
+    }
+
+    public static void Reinitialiser()
+    {
+        Interlocked.Exchange(ref _ciblesDetruites, 0);
+        Interlocked.Exchange(ref _tirsTires, 0);
+        TempsSession = 0f;
+
+        OnStatsReset?.Invoke();
+        OnScoreUpdated?.Invoke(0, 0f);
+    }
 }
