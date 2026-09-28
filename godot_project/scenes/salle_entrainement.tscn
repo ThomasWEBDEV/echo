@@ -326,3 +326,52 @@ offset_top = 14.0
 offset_right = 150.0
 offset_bottom = 50.0
 text = "00:00  |  0 cibles  |  0%"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_muret"]
+size = Vector3(0.3, 1.5, 18.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_muret"]
+size = Vector3(0.3, 1.5, 18.0)
+
+[sub_resource type="StandardMaterial3D" id="Mat_muret"]
+albedo_color = Color(0.12, 0.15, 0.19, 1)
+metallic = 0.75
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.1, 0.6, 1.0, 1)
+emission_energy_multiplier = 0.05
+
+[sub_resource type="BoxMesh" id="BoxMesh_neon_muret"]
+size = Vector3(0.08, 0.08, 18.0)
+
+[node name="Stands" type="Node3D" parent="."]
+
+[node name="MuretGauche1" type="StaticBody3D" parent="Stands"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.75, -1)
+
+[node name="Mesh" type="MeshInstance3D" parent="Stands/MuretGauche1"]
+mesh = SubResource("BoxMesh_muret")
+surface_material_override/0 = SubResource("Mat_muret")
+
+[node name="Col" type="CollisionShape3D" parent="Stands/MuretGauche1"]
+shape = SubResource("BoxShape3D_muret")
+
+[node name="NeonMuretG1" type="MeshInstance3D" parent="Stands/MuretGauche1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.75, 0)
+mesh = SubResource("BoxMesh_neon_muret")
+surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="MuretDroit1" type="StaticBody3D" parent="Stands"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.75, -1)
+
+[node name="Mesh" type="MeshInstance3D" parent="Stands/MuretDroit1"]
+mesh = SubResource("BoxMesh_muret")
+surface_material_override/0 = SubResource("Mat_muret")
+
+[node name="Col" type="CollisionShape3D" parent="Stands/MuretDroit1"]
+shape = SubResource("BoxShape3D_muret")
+
+[node name="NeonMuretD1" type="MeshInstance3D" parent="Stands/MuretDroit1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.75, 0)
+mesh = SubResource("BoxMesh_neon_muret")
+surface_material_override/0 = SubResource("Mat_neon_orange")
