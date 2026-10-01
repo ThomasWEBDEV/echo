@@ -375,3 +375,127 @@ shape = SubResource("BoxShape3D_muret")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.75, 0)
 mesh = SubResource("BoxMesh_neon_muret")
 surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pilier"]
+size = Vector3(1.2, 6.0, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pilier"]
+size = Vector3(1.2, 6.0, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_caisse"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_caisse"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_couverture"]
+size = Vector3(4.0, 1.2, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_couverture"]
+size = Vector3(4.0, 1.2, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_pilier"]
+albedo_color = Color(0.10, 0.13, 0.18, 1)
+metallic = 0.85
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.0, 0.85, 1.0, 1)
+emission_energy_multiplier = 0.15
+
+[sub_resource type="StandardMaterial3D" id="Mat_caisse"]
+albedo_color = Color(0.25, 0.20, 0.10, 1)
+metallic = 0.4
+roughness = 0.7
+emission_enabled = true
+emission = Color(0.8, 0.4, 0.0, 1)
+emission_energy_multiplier = 0.08
+
+[node name="Relief" type="Node3D" parent="."]
+
+[node name="Pilier1" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 3.0, -5)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Pilier1"]
+mesh = SubResource("BoxMesh_pilier")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Pilier1"]
+shape = SubResource("BoxShape3D_pilier")
+
+[node name="Pilier2" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 3.0, -5)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Pilier2"]
+mesh = SubResource("BoxMesh_pilier")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Pilier2"]
+shape = SubResource("BoxShape3D_pilier")
+
+[node name="Pilier3" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 3.0, 5)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Pilier3"]
+mesh = SubResource("BoxMesh_pilier")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Pilier3"]
+shape = SubResource("BoxShape3D_pilier")
+
+[node name="Pilier4" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 3.0, 5)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Pilier4"]
+mesh = SubResource("BoxMesh_pilier")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Pilier4"]
+shape = SubResource("BoxShape3D_pilier")
+
+[node name="Caisse1" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.75, -8)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Caisse1"]
+mesh = SubResource("BoxMesh_caisse")
+surface_material_override/0 = SubResource("Mat_caisse")
+[node name="Col" type="CollisionShape3D" parent="Relief/Caisse1"]
+shape = SubResource("BoxShape3D_caisse")
+
+[node name="Caisse2" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.75, -8)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Caisse2"]
+mesh = SubResource("BoxMesh_caisse")
+surface_material_override/0 = SubResource("Mat_caisse")
+[node name="Col" type="CollisionShape3D" parent="Relief/Caisse2"]
+shape = SubResource("BoxShape3D_caisse")
+
+[node name="Caisse3" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0.75, 3)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Caisse3"]
+mesh = SubResource("BoxMesh_caisse")
+surface_material_override/0 = SubResource("Mat_caisse")
+[node name="Col" type="CollisionShape3D" parent="Relief/Caisse3"]
+shape = SubResource("BoxShape3D_caisse")
+
+[node name="Caisse4" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.75, 3)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Caisse4"]
+mesh = SubResource("BoxMesh_caisse")
+surface_material_override/0 = SubResource("Mat_caisse")
+[node name="Col" type="CollisionShape3D" parent="Relief/Caisse4"]
+shape = SubResource("BoxShape3D_caisse")
+
+[node name="Couverture1" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -5)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Couverture1"]
+mesh = SubResource("BoxMesh_couverture")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Couverture1"]
+shape = SubResource("BoxShape3D_couverture")
+
+[node name="Couverture2" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0.6, 0)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Couverture2"]
+mesh = SubResource("BoxMesh_couverture")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Couverture2"]
+shape = SubResource("BoxShape3D_couverture")
+
+[node name="Couverture3" type="StaticBody3D" parent="Relief"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.6, 0)
+[node name="Mesh" type="MeshInstance3D" parent="Relief/Couverture3"]
+mesh = SubResource("BoxMesh_couverture")
+surface_material_override/0 = SubResource("Mat_pilier")
+[node name="Col" type="CollisionShape3D" parent="Relief/Couverture3"]
+shape = SubResource("BoxShape3D_couverture")
