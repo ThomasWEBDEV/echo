@@ -499,3 +499,57 @@ mesh = SubResource("BoxMesh_couverture")
 surface_material_override/0 = SubResource("Mat_pilier")
 [node name="Col" type="CollisionShape3D" parent="Relief/Couverture3"]
 shape = SubResource("BoxShape3D_couverture")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plateforme"]
+size = Vector3(8.0, 0.4, 6.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plateforme"]
+size = Vector3(8.0, 0.4, 6.0)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rampe"]
+size = Vector3(2.0, 0.2, 3.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rampe"]
+size = Vector3(2.0, 0.2, 3.0)
+
+[sub_resource type="StandardMaterial3D" id="Mat_plateforme"]
+albedo_color = Color(0.10, 0.14, 0.20, 1)
+metallic = 0.9
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.0, 0.85, 1.0, 1)
+emission_energy_multiplier = 0.2
+
+[node name="Plateformes" type="Node3D" parent="."]
+
+[node name="PlateformeGauche" type="StaticBody3D" parent="Plateformes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 1.5, -5)
+[node name="Mesh" type="MeshInstance3D" parent="Plateformes/PlateformeGauche"]
+mesh = SubResource("BoxMesh_plateforme")
+surface_material_override/0 = SubResource("Mat_plateforme")
+[node name="Col" type="CollisionShape3D" parent="Plateformes/PlateformeGauche"]
+shape = SubResource("BoxShape3D_plateforme")
+
+[node name="PlatformeDroite" type="StaticBody3D" parent="Plateformes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.5, -5)
+[node name="Mesh" type="MeshInstance3D" parent="Plateformes/PlatformeDroite"]
+mesh = SubResource("BoxMesh_plateforme")
+surface_material_override/0 = SubResource("Mat_plateforme")
+[node name="Col" type="CollisionShape3D" parent="Plateformes/PlatformeDroite"]
+shape = SubResource("BoxShape3D_plateforme")
+
+[node name="RampeGauche" type="StaticBody3D" parent="Plateformes"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.2588190, 0, -0.2588190, 0.9659258, -28, 0.8, -1.5)
+[node name="Mesh" type="MeshInstance3D" parent="Plateformes/RampeGauche"]
+mesh = SubResource("BoxMesh_rampe")
+surface_material_override/0 = SubResource("Mat_plateforme")
+[node name="Col" type="CollisionShape3D" parent="Plateformes/RampeGauche"]
+shape = SubResource("BoxShape3D_rampe")
+
+[node name="RampeDroite" type="StaticBody3D" parent="Plateformes"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.2588190, 0, -0.2588190, 0.9659258, 28, 0.8, -1.5)
+[node name="Mesh" type="MeshInstance3D" parent="Plateformes/RampeDroite"]
+mesh = SubResource("BoxMesh_rampe")
+surface_material_override/0 = SubResource("Mat_plateforme")
+[node name="Col" type="CollisionShape3D" parent="Plateformes/RampeDroite"]
+shape = SubResource("BoxShape3D_rampe")
