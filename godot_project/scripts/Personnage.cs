@@ -355,9 +355,18 @@ public partial class Personnage : CharacterBody3D
 
         var collider = result["collider"].As<GodotObject>();
         if (collider is Cible cible)
+        {
             cible.TakeHit();
+        }
         else if (collider is Drone drone)
+        {
             drone.TakeHit();
+        }
+        else
+        {
+            Vector3 normale = result["normal"].As<Vector3>();
+            ImpactDecal.Creer(this, impact, normale);
+        }
     }
 
     private void _Recharger()
