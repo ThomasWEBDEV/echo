@@ -1,37 +1,50 @@
 using Godot;
 
-/// <summary>
-/// Utilitaire pour créer un impact de balle visuel (trou d'impact / décaleur simple) sur les surfaces sans assets.
-/// </summary>
 public static class ImpactDecal
 {
     public static void Creer(Node hote, Vector3 position, Vector3 normale)
     {
-        var decal = new MeshInstance3D();
-        var quad = new QuadMesh();
-        quad.Size = new Vector2(0.08f, 0.08f);
-        decal.Mesh = quad;
+        var nœudImpact = new Node3D();
+        hote.GetTree().Root.AddChild(nœudImpact);
+        nœudImpact.GlobalPosition = position;
 
-        var mat = new StandardMaterial3D();
-        mat.AlbedoColor = new Color(0.1f, 0.1f, 0.1f); // Noir/Gris fumé
-        mat.Roughness = 0.9f;
-        mat.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
-        decal.SetSurfaceOverrideMaterial(0, mat);
-
-        hote.GetTree().Root.AddChild(decal);
-        decal.GlobalPosition = position + normale * 0.005f; // Légèrement décollé pour éviter le z-fighting
-
-        if (normale != Vector3.Zero)
+        if (normale != Vector3.Zero && normale != Vector3.Up)
         {
-            decal.LookAt(position + normale, Vector3.Up);
+            nœudImpact.LookAt(position + normale, Vector3.Up);
         }
 
-        // Disparition progressive après quelques secondes
-        var timer = hote.GetTree().CreateTimer(5.0f);
+        // Création du Decal Godot 3D
+        var decal = new Decal();
+        decal.Size = new Vector3(0.12f, 0.12f, 0.12f);
+        nœudImpact.AddChild(decal);
+
+        // Particules d'éclats à l'impact
+        var particules = new GpuParticles3D();
+        var matParticle = new ParticleProcessMaterial
+        {
+            Direction = Vector3.ModelZ,
+            Spread = 45.0f,
+            InitialVelocityMin = 2.0f,
+            InitialVelocityMax = 5.0f,
+            Gravity = new Vector3(0, -9.8f, 0),
+            ScaleMin = 0.02f,
+            ScaleMax = 0.06f
+        };
+
+        particules.ProcessMaterial = matParticle;
+        particules.Amount = 10;
+        particules.Lifetime = 0.25f;
+        particules.OneShot = true;
+        particules.Explosiveness = 0.9f;
+        
+        nœudImpact.AddChild(particules);
+        particules.Emitting = true;
+
+        var timer = hote.GetTree().CreateTimer(8.0f);
         timer.Timeout += () =>
         {
-            if (GodotObject.IsInstanceValid(decal))
-                decal.QueueFree();
+            if (GodotObject.IsInstanceValid(nœudImpact))
+                nœudImpact.QueueFree();
         };
     }
 }
