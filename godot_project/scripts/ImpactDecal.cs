@@ -22,7 +22,7 @@ public static class ImpactDecal
         var particules = new GpuParticles3D();
         var matParticle = new ParticleProcessMaterial
         {
-            Direction = Vector3.ModelZ,
+            Direction = Vector3.Back, // Remplace Vector3.ModelZ
             Spread = 45.0f,
             InitialVelocityMin = 2.0f,
             InitialVelocityMax = 5.0f,
