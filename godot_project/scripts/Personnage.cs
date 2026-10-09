@@ -318,6 +318,22 @@ public partial class Personnage : CharacterBody3D
         }
     }
 
+    private void _DeclencherHitmarker()
+    {
+        if (_crosshairH != null && _crosshairV != null)
+        {
+            _crosshairH.Color = new Color(1.0f, 0.2f, 0.2f);
+            _crosshairV.Color = new Color(1.0f, 0.2f, 0.2f);
+
+            var timer = GetTree().CreateTimer(0.08f);
+            timer.Timeout += () =>
+            {
+                if (GodotObject.IsInstanceValid(_crosshairH)) _crosshairH.Color = Colors.White;
+                if (GodotObject.IsInstanceValid(_crosshairV)) _crosshairV.Color = Colors.White;
+            };
+        }
+    }
+
     private void _Tirer()
     {
         _munitionsActuelles--;
@@ -357,10 +373,12 @@ public partial class Personnage : CharacterBody3D
         if (collider is Cible cible)
         {
             cible.TakeHit();
+            _DeclencherHitmarker();
         }
         else if (collider is Drone drone)
         {
             drone.TakeHit();
+            _DeclencherHitmarker();
         }
         else
         {
