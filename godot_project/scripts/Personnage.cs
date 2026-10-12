@@ -132,11 +132,17 @@ public partial class Personnage : CharacterBody3D
         }
 
         if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed
-            && mouseBtn.ButtonIndex == MouseButton.Left
-            && Input.MouseMode == Input.MouseModeEnum.Visible)
+            && mouseBtn.ButtonIndex == MouseButton.Left)
         {
-            Input.MouseMode = Input.MouseModeEnum.Captured;
-            _sourisRecaptureeCeFrame = true;
+            if (Input.MouseMode == Input.MouseModeEnum.Visible)
+            {
+                Input.MouseMode = Input.MouseModeEnum.Captured;
+                _sourisRecaptureeCeFrame = true;
+            }
+            else if (Input.MouseMode == Input.MouseModeEnum.Captured && !_modeFPS)
+            {
+                _BasculerMode();
+            }
         }
     }
 
