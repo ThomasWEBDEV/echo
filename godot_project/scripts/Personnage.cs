@@ -28,6 +28,12 @@ public partial class Personnage : CharacterBody3D
     [ExportGroup("Sante")]
     [Export] public float PointsDeVie = 100f;
 
+    [ExportGroup("Endurance")]
+    [Export] public float EnduranceMax = 100f;
+    [Export] public float ConsommationCourse = 10f;
+    [Export] public float RecuperationEndurance = 18f;
+    [Export] public float CoutDash = 30f;
+
     private SpringArm3D _springArm;
     private Node3D _tete;
     private Camera3D _cameraTPS;
@@ -43,6 +49,7 @@ public partial class Personnage : CharacterBody3D
     private Label _labelSante;
 
     private float _pvActuels;
+    private float _enduranceActuelle;
     private string _etatCourant = "";
     private bool _enSaut = false;
     private bool _etaitEnAir = false;
@@ -85,6 +92,7 @@ public partial class Personnage : CharacterBody3D
 
         AddToGroup("joueur");
         _pvActuels = PointsDeVie;
+        _enduranceActuelle = EnduranceMax;
         _munitionsActuelles = MaxMunitions;
 
         _labelMunitions = GetNodeOrNull<Label>("HUD/LabelMunitions");
@@ -186,7 +194,21 @@ public partial class Personnage : CharacterBody3D
             direction = direction.Normalized();
 
         bool marcher = Input.IsPhysicalKeyPressed(Key.Shift);
+        bool courseActive = !marcher && direction.LengthSquared() > 0.01f && surSol && !_enDash;
         float vitesse = marcher ? VitesseMarche : VitesseCourse;
+
+        if (courseActive && _enduranceActuelle > 0f)
+        {
+            _enduranceActuelle = Mathf.Max(0f, _enduranceActuelle - ConsommationCourse * fDelta);
+            vitesse = VitesseCourse;
+        }
+        else if (!courseActive || _enduranceActuelle <= 0f)
+        {
+            _enduranceActuelle = Mathf.Min(EnduranceMax, _enduranceActuelle + RecuperationEndurance * fDelta);
+        }
+
+        if (!marcher && _enduranceActuelle <= 0f)
+            vitesse = VitesseMarche;
 
         if (direction.LengthSquared() > 0.01f)
         {
@@ -216,15 +238,19 @@ public partial class Personnage : CharacterBody3D
 
         if (Input.IsActionJustPressed("dasher") && surSol && !_enDash && _cooldownDashRestant <= 0f)
         {
-            if (direction.LengthSquared() > 0.01f)
-                _directionDash = direction;
-            else
+            if (_enduranceActuelle >= CoutDash)
             {
-                Vector3 fwd = new Vector3(-referenceCamera.GlobalBasis.Z.X, 0f, -referenceCamera.GlobalBasis.Z.Z);
-                _directionDash = fwd.LengthSquared() > 0.001f ? fwd.Normalized() : Vector3.Forward;
+                _enduranceActuelle = Mathf.Max(0f, _enduranceActuelle - CoutDash);
+                if (direction.LengthSquared() > 0.01f)
+                    _directionDash = direction;
+                else
+                {
+                    Vector3 fwd = new Vector3(-referenceCamera.GlobalBasis.Z.X, 0f, -referenceCamera.GlobalBasis.Z.Z);
+                    _directionDash = fwd.LengthSquared() > 0.001f ? fwd.Normalized() : Vector3.Forward;
+                }
+                _enDash = true;
+                _timerDash = 0f;
             }
-            _enDash = true;
-            _timerDash = 0f;
         }
 
         if (_enDash)
@@ -427,7 +453,8 @@ public partial class Personnage : CharacterBody3D
             _labelScore.Text = $"Cibles : {ScoreManager.CiblesDetruites}";
         if (_labelSante != null)
         {
-            _labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie}";
+            int enduranceAffichee = Mathf.RoundToInt(_enduranceActuelle);
+            _labelSante.Text = $"PV : {(int)_pvActuels}/{(int)PointsDeVie} | END : {enduranceAffichee}/{(int)EnduranceMax}";
             float ratio = Mathf.Clamp(_pvActuels / PointsDeVie, 0f, 1f);
             Color couleurSante = ratio > 0.5f
                 ? new Color(0.2f, 1f, 0.2f).Lerp(new Color(1f, 1f, 0.1f), (1f - ratio) * 2f)
