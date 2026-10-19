@@ -621,3 +621,51 @@ surface_material_override/0 = SubResource("Mat_neon_orange")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, -1.0, -1.2)
 mesh = SubResource("BoxMesh_module_console")
 surface_material_override/0 = SubResource("Mat_module_console")
+
+[sub_resource type="BoxMesh" id="BoxMesh_panneau_identite"]
+size = Vector3(11.0, 1.6, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ligne_identite"]
+size = Vector3(9.8, 0.035, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Mat_panneau_identite"]
+albedo_color = Color(0.025, 0.045, 0.075, 1)
+metallic = 0.85
+roughness = 0.32
+
+[sub_resource type="StandardMaterial3D" id="Mat_ligne_identite"]
+albedo_color = Color(0.0, 0.85, 1.0, 1)
+emission_enabled = true
+emission = Color(0.0, 0.85, 1.0, 1)
+emission_energy_multiplier = 3.0
+
+[node name="SignaletiqueSecteur" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 4.65, -19.72)
+
+[node name="Panneau" type="MeshInstance3D" parent="SignaletiqueSecteur"]
+mesh = SubResource("BoxMesh_panneau_identite")
+surface_material_override/0 = SubResource("Mat_panneau_identite")
+
+[node name="LigneHaute" type="MeshInstance3D" parent="SignaletiqueSecteur"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -0.09)
+mesh = SubResource("BoxMesh_ligne_identite")
+surface_material_override/0 = SubResource("Mat_ligne_identite")
+
+[node name="LigneBasse" type="MeshInstance3D" parent="SignaletiqueSecteur"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.62, -0.09)
+mesh = SubResource("BoxMesh_ligne_identite")
+surface_material_override/0 = SubResource("Mat_ligne_identite")
+
+[node name="TitreSecteur" type="Label3D" parent="SignaletiqueSecteur"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, -0.09)
+text = "ECHO  //  SECTEUR 07"
+font_size = 64
+pixel_size = 0.01
+modulate = Color(0.55, 0.9, 1, 1)
+
+[node name="SousTitreSecteur" type="Label3D" parent="SignaletiqueSecteur"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.34, -0.09)
+text = "ZONE D'ENTRAINEMENT"
+font_size = 32
+pixel_size = 0.01
+modulate = Color(1, 0.55, 0.2, 1)
