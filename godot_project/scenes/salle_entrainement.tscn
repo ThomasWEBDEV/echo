@@ -553,3 +553,71 @@ mesh = SubResource("BoxMesh_rampe")
 surface_material_override/0 = SubResource("Mat_plateforme")
 [node name="Col" type="CollisionShape3D" parent="Plateformes/RampeDroite"]
 shape = SubResource("BoxShape3D_rampe")
+
+[sub_resource type="BoxMesh" id="BoxMesh_console"]
+size = Vector3(0.22, 3.2, 5.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ecran_console"]
+size = Vector3(0.06, 1.35, 3.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ligne_console"]
+size = Vector3(0.08, 0.06, 3.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_module_console"]
+size = Vector3(0.08, 0.16, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="Mat_console"]
+albedo_color = Color(0.045, 0.075, 0.11, 1)
+metallic = 0.9
+roughness = 0.28
+
+[sub_resource type="StandardMaterial3D" id="Mat_ecran_console"]
+albedo_color = Color(0.015, 0.12, 0.19, 1)
+emission_enabled = true
+emission = Color(0.0, 0.55, 0.8, 1)
+emission_energy_multiplier = 1.2
+metallic = 0.2
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="Mat_module_console"]
+albedo_color = Color(0.0, 0.85, 1.0, 1)
+emission_enabled = true
+emission = Color(0.0, 0.85, 1.0, 1)
+emission_energy_multiplier = 2.5
+
+[node name="ConsoleMurEst" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.55, 3.0, 0)
+
+[node name="Boitier" type="MeshInstance3D" parent="ConsoleMurEst"]
+mesh = SubResource("BoxMesh_console")
+surface_material_override/0 = SubResource("Mat_console")
+
+[node name="Ecran" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.25, 0)
+mesh = SubResource("BoxMesh_ecran_console")
+surface_material_override/0 = SubResource("Mat_ecran_console")
+
+[node name="LigneEcranHaute" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, 0.65, 0)
+mesh = SubResource("BoxMesh_ligne_console")
+surface_material_override/0 = SubResource("Mat_module_console")
+
+[node name="LigneEcranBasse" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, -0.2, 0)
+mesh = SubResource("BoxMesh_ligne_console")
+surface_material_override/0 = SubResource("Mat_module_console")
+
+[node name="VoyantCyan" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, -1.0, -1.8)
+mesh = SubResource("BoxMesh_module_console")
+surface_material_override/0 = SubResource("Mat_module_console")
+
+[node name="VoyantOrange" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, -1.0, -1.5)
+mesh = SubResource("BoxMesh_module_console")
+surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="VoyantCyan2" type="MeshInstance3D" parent="ConsoleMurEst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, -1.0, -1.2)
+mesh = SubResource("BoxMesh_module_console")
+surface_material_override/0 = SubResource("Mat_module_console")
