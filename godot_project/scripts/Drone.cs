@@ -104,7 +104,7 @@ public partial class Drone : CharacterBody3D
 
                 float dist = GlobalPosition.DistanceTo(_joueur.GlobalPosition);
 
-                // Phase d'alerte : joueur détecté mais pas encore en poursuite
+                // Phase d'alerte : jouer etecter mais pas e,ncore de ôursuite 
                 if (!_enPoursuite && !_enAlerte && dist < PorteeDetection && _LigneDeVueLibre())
                 {
                         _enAlerte    = true;
