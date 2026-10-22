@@ -113,6 +113,17 @@ size = Vector3(12.0, 0.025, 0.08)
 [sub_resource type="BoxMesh" id="BoxMesh_repere_sol_z"]
 size = Vector3(0.08, 0.025, 10.0)
 
+[sub_resource type="BoxMesh" id="BoxMesh_panneau_ventilation"]
+size = Vector3(4.4, 1.8, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lamelle_ventilation"]
+size = Vector3(3.6, 0.08, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ventilation"]
+albedo_color = Color(0.035, 0.055, 0.085, 1)
+metallic = 0.85
+roughness = 0.4
+
 [node name="SalleEntrainement" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -717,3 +728,49 @@ surface_material_override/0 = SubResource("Mat_neon_orange")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.12, 8)
 mesh = SubResource("BoxMesh_repere_sol_z")
 surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="VentilationsNord" type="Node3D" parent="."]
+
+[node name="VentilationGauche" type="Node3D" parent="VentilationsNord"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 3.0, -19.8)
+
+[node name="Panneau" type="MeshInstance3D" parent="VentilationsNord/VentilationGauche"]
+mesh = SubResource("BoxMesh_panneau_ventilation")
+surface_material_override/0 = SubResource("Mat_ventilation")
+
+[node name="Lamelle1" type="MeshInstance3D" parent="VentilationsNord/VentilationGauche"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="Lamelle2" type="MeshInstance3D" parent="VentilationsNord/VentilationGauche"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="Lamelle3" type="MeshInstance3D" parent="VentilationsNord/VentilationGauche"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="VentilationDroite" type="Node3D" parent="VentilationsNord"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 3.0, -19.8)
+
+[node name="Panneau" type="MeshInstance3D" parent="VentilationsNord/VentilationDroite"]
+mesh = SubResource("BoxMesh_panneau_ventilation")
+surface_material_override/0 = SubResource("Mat_ventilation")
+
+[node name="Lamelle1" type="MeshInstance3D" parent="VentilationsNord/VentilationDroite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="Lamelle2" type="MeshInstance3D" parent="VentilationsNord/VentilationDroite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="Lamelle3" type="MeshInstance3D" parent="VentilationsNord/VentilationDroite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0.06)
+mesh = SubResource("BoxMesh_lamelle_ventilation")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
