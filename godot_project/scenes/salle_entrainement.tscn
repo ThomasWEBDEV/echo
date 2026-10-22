@@ -104,6 +104,9 @@ size = Vector3(80.0, 0.02, 0.1)
 [sub_resource type="BoxMesh" id="BoxMesh_ligne_z"]
 size = Vector3(0.1, 0.02, 40.0)
 
+[sub_resource type="BoxMesh" id="BoxMesh_panneau_plafond"]
+size = Vector3(6.0, 0.05, 1.2)
+
 [node name="SalleEntrainement" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -669,3 +672,20 @@ text = "ZONE D'ENTRAINEMENT"
 font_size = 32
 pixel_size = 0.01
 modulate = Color(1, 0.55, 0.2, 1)
+
+[node name="PanneauxPlafond" type="Node3D" parent="."]
+
+[node name="PanneauCentre" type="MeshInstance3D" parent="PanneauxPlafond"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.96, 0)
+mesh = SubResource("BoxMesh_panneau_plafond")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="PanneauNord" type="MeshInstance3D" parent="PanneauxPlafond"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.96, -10)
+mesh = SubResource("BoxMesh_panneau_plafond")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="PanneauSud" type="MeshInstance3D" parent="PanneauxPlafond"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.96, 10)
+mesh = SubResource("BoxMesh_panneau_plafond")
+surface_material_override/0 = SubResource("Mat_neon_cyan")
