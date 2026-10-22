@@ -107,6 +107,12 @@ size = Vector3(0.1, 0.02, 40.0)
 [sub_resource type="BoxMesh" id="BoxMesh_panneau_plafond"]
 size = Vector3(6.0, 0.05, 1.2)
 
+[sub_resource type="BoxMesh" id="BoxMesh_repere_sol_x"]
+size = Vector3(12.0, 0.025, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_repere_sol_z"]
+size = Vector3(0.08, 0.025, 10.0)
+
 [node name="SalleEntrainement" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -689,3 +695,25 @@ surface_material_override/0 = SubResource("Mat_neon_cyan")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.96, 10)
 mesh = SubResource("BoxMesh_panneau_plafond")
 surface_material_override/0 = SubResource("Mat_neon_cyan")
+
+[node name="ReperesSol" type="Node3D" parent="."]
+
+[node name="LimiteAvant" type="MeshInstance3D" parent="ReperesSol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 3)
+mesh = SubResource("BoxMesh_repere_sol_x")
+surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="LimiteArriere" type="MeshInstance3D" parent="ReperesSol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 13)
+mesh = SubResource("BoxMesh_repere_sol_x")
+surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="LimiteGauche" type="MeshInstance3D" parent="ReperesSol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.12, 8)
+mesh = SubResource("BoxMesh_repere_sol_z")
+surface_material_override/0 = SubResource("Mat_neon_orange")
+
+[node name="LimiteDroite" type="MeshInstance3D" parent="ReperesSol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.12, 8)
+mesh = SubResource("BoxMesh_repere_sol_z")
+surface_material_override/0 = SubResource("Mat_neon_orange")
