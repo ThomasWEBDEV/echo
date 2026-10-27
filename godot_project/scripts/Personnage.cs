@@ -18,6 +18,7 @@ public partial class Personnage : CharacterBody3D
     [Export] public int MaxMunitions = 30;
     [Export] public float TempsRechargement = 2.0f;
     [Export] public float CadenceTir = 0.1f;
+    [Export] public bool ModeRafale = false;
     [Export] public float ReculVertical = 0.04f;
     [Export] public float ReculHorizontal = 0.015f;
     [Export] public float ReculVitesseRetour = 8.0f;
@@ -276,7 +277,9 @@ public partial class Personnage : CharacterBody3D
         if (_delaiProchainTir > 0f)
             _delaiProchainTir -= fDelta;
 
-        if (_modeFPS && Input.IsActionPressed("tirer")
+        bool actionTir = ModeRafale ? Input.IsActionJustPressed("tirer") : Input.IsActionPressed("tirer");
+
+        if (_modeFPS && actionTir
             && Input.MouseMode == Input.MouseModeEnum.Captured
             && !_sourisRecaptureeCeFrame
             && _delaiProchainTir <= 0f)
@@ -375,6 +378,15 @@ public partial class Personnage : CharacterBody3D
         float reculY = (float)GD.RandRange(-ReculHorizontal, ReculHorizontal);
         float reculZ = (float)GD.RandRange(-0.02f, 0.02f);
         _reculCible += new Vector3(ReculVertical, reculY, reculZ);
+
+        if (_crosshairH != null && _crosshairV != null)
+        {
+            _crosshairH.Scale = new Vector2(1.5f, 1.5f);
+            _crosshairV.Scale = new Vector2(1.5f, 1.5f);
+            var tween = CreateTween().SetParallel(true);
+            tween.TweenProperty(_crosshairH, "scale", Vector2.One, 0.08f);
+            tween.TweenProperty(_crosshairV, "scale", Vector2.One, 0.08f);
+        }
 
         float dispersionFacteur = DispersionBase;
         if (!IsOnFloor())
